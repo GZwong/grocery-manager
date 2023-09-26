@@ -186,12 +186,13 @@ class UserDataManager():
             for index, row in user_df.iterrows():
                 item_id = row['item_id']
 
-                # For every column of users,
+                # For every column of users, obtain their selection
                 for user_id in self.get_usernames():
-                    # Selection (0 or 1) for the specific uesr_id
+                    # Selection (0 or 1) for the specific uesr_id. This should be a boolean variable (True/False)
                     selection = row[user_id]
-                    print(selection, item_id, user_id)
-                    # Convert "selection" and "item_id" to integers
+                    assert isinstance(selection, (bool))
+                    
+                    # Execute the update
                     conn.execute(update_query, (int(selection), int(item_id), user_id))
                     conn.commit()
                     

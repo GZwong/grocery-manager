@@ -76,8 +76,9 @@ if selected_date:
     # price_col_number = user_df.columns.get_loc('price')
     username_list = UserData.get_usernames()
     
-    summary_df = user_df   
-    summary_df['Number of Buyer'] = user_df[username_list].sum(axis=1)  # Total number of buyers that bought each item
+    # Perform a deep copy of the dataframe so that the original remains unmodified
+    summary_df = user_df.copy(deep=True)   
+    summary_df['Number of Buyer'] = summary_df[username_list].sum(axis=1)  # Total number of buyers that bought each item
     summary_df['Price Per User'] = summary_df.apply(lambda row: row['price'] / row['Number of Buyer'] if row['Number of Buyer'] > 0 else 0, axis=1)
 
     # Calculate price per user for all users
@@ -89,8 +90,6 @@ if selected_date:
     
     # Show this dataframe
     st.dataframe(summary_df)
-    print(summary_df.name)
-
 
     # User options
     if st.button("Save to Database"):
