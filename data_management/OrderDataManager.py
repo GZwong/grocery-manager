@@ -159,35 +159,3 @@ class OrderDataManager():
         with sqlite3.connect(DATABASE_FILE) as conn:
             df = pd.read_sql_query(query, conn, params=[order_date, ])
         return df
-
-
-    # def order_items_df(self) -> pd.DataFrame:
-    #     """Return the order_items table"""
-        
-    #     query = "SELECT * FROM order_items"
-    #     with sqlite3.connect(DATABASE_FILE) as conn:
-    #         df = pd.read_sql_query(query, conn)
-    #     return df
-    
-    
-    # def display_items_df(self, order_date: Union[datetime, str]) -> pd.DataFrame:
-    #     """
-    #     For the given order_date, display the relevant columns for the "order_items" dataframe.
-
-    #     :param order_date: The date of the made order.
-    #     :type order_date: Union[datetime, str]
-    #     :return: Dataframe of the order items for the input order date
-    #     :rtype: pd.DataFrame
-    #     """
-    #     # Extract relevant data
-    #     info_df = self.order_info_df()
-    #     items_df = self.order_items_df()
-        
-    #     # Filter dataframes to the specified date
-    #     order_id = info_df[info_df['order_date'] == order_date]['order_id'].iloc[0]
-    #     items_df = items_df[items_df['order_id'] == order_id]
-        
-    #     # Remove "order_id" column since it is not relevant for display
-    #     items_df.drop(columns=["order_id"], inplace=True)
-
-    #     return items_df
