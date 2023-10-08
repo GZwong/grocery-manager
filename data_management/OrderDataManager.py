@@ -28,15 +28,15 @@ class OrderDataManager():
         
     check_if_date_exist(self, date: datetime)
         (PUBLIC) Get dataframe of order dates
+        
+    get_all_dates(self)
+        (PUBLIC) Get all order dates available in the database
     
     upload_order(self, receipt: SainsburysReceipt)
         (PUBLIC) Insert the order information into "order_info" and "order_items"
          
     delete_order_by_date(self, receipt: Sainsburys Receipt)
         (PUBLIC) Given an order date, delete all relevant information from "order_info" and "order_items"
-    
-    view_order_by_date(self, order_date)
-        (PUBLIC) Given an
     
     update_order_by_date(self, pd.DataFrame)
         (PUBLIC) Given an order date,
@@ -100,7 +100,7 @@ class OrderDataManager():
     
     
     def get_all_dates(self) -> pd.DataFrame:
-        """Return a dataframe of a single column "order_date" from the database"""
+        """Return a dataframe of a single column containing all "order_date" in the database"""
         query = "SELECT order_date from order_info"
         with sqlite3.connect(DATABASE_FILE) as conn:
             order_dates = pd.read_sql_query(query, conn)

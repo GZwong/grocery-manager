@@ -20,12 +20,38 @@ class UserDataManager():
     When initialized, get a copy of the dataframe for existing user selections for that date. Return an empty dataframe
     if there were no prior selections.
     
+    Attributes
+    ----------
+    order_date
+    
+    Methods
+    -------
+    _create_user_selections_table(self)
+        Create a table called "user_selections" within the database if it has not existed
+        
+    _read_current_user_selections(self)
+        Return a dataframe which is a copy of the table available in the database
+        
+    get_usernames(self)
+        (PUBLIC) Get a list of all usernames available for this particular order date
+        
+    add_user(self, username)
+        (PUBLIC) Add a user to the list of users for this particular order date
+    
+    delete_user(self, username)
+        (PUBLIC) Delete a user from the list of users for this particular order date
+        
+    show_user_df(self)
+        (PUBLIC) Show a converted form of the "user_selection" database table where each user is designated their own
+        column, instead of the format stored in the database where there is a single column for all users
+        
+    save_user_df(self, df)
+        (PUBLIC) Alter the database user selection entries by uploading an edited dataframe df 
     """
     
     def __init__(self, order_date: Union[datetime, str]):
         
         self.order_date = order_date
-        # self.database_df = None
         
         # Create the required database tables IF NOT YET EXISTS
         self._create_user_selections_table()
@@ -170,6 +196,10 @@ class UserDataManager():
     
     
     def save_user_df(self, user_df: pd.DataFrame):
+        """
+        Change the database user selection entries according to a dataframe of the form returned by 
+        "self.show_user_df()"
+        """
         
         # This query updates a specific selection entry given the item_id and the user_id
         update_query = """
@@ -188,7 +218,7 @@ class UserDataManager():
 
                 # For every column of users, obtain their selection
                 for user_id in self.get_usernames():
-                    # Selection (0 or 1) for the specific uesr_id. This should be a boolean variable (True/False)
+                    # Selection (0 or 1) for the specific user_id. This should be a boolean variable (True/False)
                     selection = row[user_id]
                     assert isinstance(selection, (bool))
                     

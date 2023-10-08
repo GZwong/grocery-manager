@@ -3,6 +3,8 @@ This repository stores the scripts pertaining a Streamlit application which read
 
 Currently, the project uses python to extract text from receipt PDFs and process the texts into a readable format by which information can be extracted.
 
+![Alt text](static/app_layout.png)
+
 
 ### File Structure
 ```

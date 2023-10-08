@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime as dt
 from pypdf import PdfReader
 
-# Create another Receipt class to be inherited (in case of other receipts)
+# TODO: Create another Receipt class to be inherited (in case of other receipts)
 
 class SainsburysReceipt():
     
