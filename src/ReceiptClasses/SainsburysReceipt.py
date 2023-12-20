@@ -2,9 +2,12 @@ import pandas as pd
 from datetime import datetime as dt
 from pypdf import PdfReader
 
+# Project-specific Imports
+from src.Receipts import Receipt
+
 # TODO: Create another Receipt class to be inherited (in case of other receipts)
 
-class SainsburysReceipt():
+class SainsburysReceipt(Receipt):
     
     def __init__(self, pdf_file):
 
@@ -20,6 +23,7 @@ class SainsburysReceipt():
         self._find_order_id_time()
         # Order Items
         self._find_items_info()
+  
   
     def _parse_receipt(self):
         """
