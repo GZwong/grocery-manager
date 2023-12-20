@@ -6,7 +6,7 @@ from typing import Union
 
 # Project-specific Imports
 from path_management.base import get_database_path
-from receipt_reader.SainsburysReceipt import SainsburysReceipt
+from src.ReceiptClasses.SainsburysReceipt import SainsburysReceipt
 
 
 # Absolute Path to the sqlite3 database

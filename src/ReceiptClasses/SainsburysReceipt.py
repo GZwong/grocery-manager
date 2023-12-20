@@ -3,7 +3,7 @@ from datetime import datetime as dt
 from pypdf import PdfReader
 
 # Project-specific Imports
-from src.Receipts import Receipt
+from src.ReceiptClasses import Receipt
 
 # TODO: Create another Receipt class to be inherited (in case of other receipts)
 

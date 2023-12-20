@@ -3,9 +3,9 @@ import streamlit as st
 import pandas as pd
 
 # Project-Specific Imports
-from receipt_reader.SainsburysReceipt import SainsburysReceipt
-from data_management.OrderDataManager import OrderDataManager
-from data_management.UserDataManager import UserDataManager
+from src.ReceiptClasses.SainsburysReceipt import SainsburysReceipt
+from database_management.OrderDataManager import OrderDataManager
+from database_management.UserDataManager import UserDataManager
 
 
 # Set page layout to be wide
