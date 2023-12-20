@@ -37,10 +37,7 @@ class OrderDataManager():
          
     delete_order_by_date(self, receipt: Sainsburys Receipt)
         (PUBLIC) Given an order date, delete all relevant information from "order_info" and "order_items"
-    
-    update_order_by_date(self, pd.DataFrame)
-        (PUBLIC) Given an order date,
-        
+
     """
     
     def __init__(self):
@@ -95,7 +92,7 @@ class OrderDataManager():
         if result[0] > 0:
             print(f"The date '{date}' exists in the order_info table.")
             return 1
-        print(f"The date '{date} does not exist  in the 'order-info' table.")
+        print(f"The date '{date} does not exist in the 'order-info' table.")
         return 0
     
     
@@ -112,10 +109,10 @@ class OrderDataManager():
         
         # Extract information from pdf and prepare as dataframes to utilize pd.to_sql()    
         # Convert order_date to string for readability
-        order_date_str = datetime.strftime(receipt.order_date, '%Y-%m-%d %H:%M:%S')    
+        order_date_str = datetime.strftime(receipt.order_time, '%Y-%m-%d %H:%M:%S')    
         info_df = pd.DataFrame({'order_id': [receipt.order_id],
                                 'order_date': [order_date_str]})
-        item_df = receipt.item_df
+        item_df = pd.DataFrame(receipt.get_item_list())
                 
         # If date exists already, terminate the function
         if self.check_if_date_exists(order_date_str):
@@ -141,13 +138,12 @@ class OrderDataManager():
         with sqlite3.connect(DATABASE_FILE) as conn:
             conn.execute("PRAGMA foreign_keys = ON;")  # Enable foreign key support
             conn.execute(delete_query, (order_date, ))
-            
+
+
     def load_order_items_by_date(self, order_date: Union[datetime, str]) -> pd.DataFrame:
         """
-        Load the "order_info" table from the database as an attribute "self.order_info_df".
-        
-        This attribute can then be modified by external means. This dataframe can then be uploaded to the database
-        using "update_order_info_by_date".
+        Return a dataframe corresponding to the "order_items" table in the
+        database, filtered to the input date.
         """
         query = """
             SELECT * FROM order_items AS items
@@ -159,3 +155,4 @@ class OrderDataManager():
         with sqlite3.connect(DATABASE_FILE) as conn:
             df = pd.read_sql_query(query, conn, params=[order_date, ])
         return df
+            

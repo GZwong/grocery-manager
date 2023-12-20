@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime as dt
 from typing import Dict, Union, List
 
+
 class Receipt(ABC):
     """
     Abstract base class for parsing different types of receipts.
@@ -27,7 +28,7 @@ class Receipt(ABC):
         self._raw_content = self._parse_receipt(pdf_file)
         self._order_id = self._find_order_id()
         self._order_time = self._find_order_time()
-        self._item_dict = self._find_items_info()
+        self._item_dict = self._find_items_dict()
 
     @abstractmethod
     def _parse_receipt(self, pdf_file: str) -> List[str]:
@@ -70,7 +71,7 @@ class Receipt(ABC):
         pass
 
     @abstractmethod
-    def _find_items_info(self) -> Dict[str, Dict[str, Union[int, float]]]:
+    def _find_items_dict(self) -> Dict[str, Dict[str, Union[int, float]]]:
         """
         Abstract method to extract item information from the receipt.
 
@@ -92,5 +93,5 @@ class Receipt(ABC):
         return self._order_date
     
     @property
-    def items(self) -> Dict[str, Dict[str, Union[int, float]]]:
+    def order_items(self) -> Dict[str, Dict[str, Union[int, float]]]:
         return self._item_dict

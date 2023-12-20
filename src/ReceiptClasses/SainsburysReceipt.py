@@ -1,9 +1,9 @@
 from datetime import datetime as dt
 from pypdf import PdfReader
-from typing import Dict, Union
+from typing import List, Dict, Union
 
 # Project-specific Imports
-from src.ReceiptClasses import Receipt
+from src.ReceiptClasses.Receipt import Receipt
 
 
 class SainsburysReceipt(Receipt):
@@ -14,13 +14,16 @@ class SainsburysReceipt(Receipt):
         Args:
             pdf_file (str): Path to the receipt PDF file.
         """
+        # Parent Class Initialization
+        super().__init__(pdf_file)
+
         # List of raw PDF lines
         self._raw_content = self._parse_receipt(pdf_file)
         
         # Order ID, time and items
         self._order_id = self._find_order_id()
         self._order_time = self._find_order_time()
-        self._item_dict = self._find_items_info()
+        self._item_dict = self._find_items_dict()
   
 
     def _parse_receipt(self, pdf_file: str):
@@ -86,7 +89,7 @@ class SainsburysReceipt(Receipt):
         return order_date
 
 
-    def _find_items_info(self) -> Dict[str, Dict[str, Union[int, float]]]:
+    def _find_items_dict(self) -> Dict[str, Dict[str, Union[int, float]]]:
         """
         Store a nested dictionary into self._item_dict in the form:
 
@@ -165,14 +168,49 @@ class SainsburysReceipt(Receipt):
                 if amount.endswith("kg"):
                     amount = amount[:-2]   # Strip away "kg"
                     weight = float(amount)
-                    quantity = None
+                    quantity = 1
                 else:
                     weight = None
                     quantity = int(amount)
 
+                price = float(price)
+
             # Store items as a list of dictionaries
             item_dict[name] = {"Quantity": quantity, "Weight": weight, "Price": price}
+
+        return item_dict
     
+
+    def get_item_list(self) -> List[Dict]:
+        """
+        Returns a list of dictionaries where each entry correspond strictly to a
+        single item - items with more than quantity will be duplicated in the
+        list.
+
+        Returns:
+            List[Dict]:
+                A list of dictionaries where each item correspond to an entry.
+        """
+
+        item_list = []
+
+        # Convert nested dictionary to a list of dictionaries
+        for item_name, attributes in self._item_dict.items():
+            
+            quantity = attributes["Quantity"]
+            weight = attributes["Weight"]
+            price = attributes["Price"]
+
+            for i in range(quantity):
+                row = {"item_name": item_name,
+                        "weight": weight,
+                        "price": price/quantity,  # Divide evenly among items
+                        "order_id": self.order_id
+                        }
+                item_list.append(row)
+            
+        return item_list
+
 
     # Getters ------------------------------------------------------------------
     @property
@@ -184,7 +222,7 @@ class SainsburysReceipt(Receipt):
         return self._order_time
 
     @property
-    def items(self) -> Dict[str, Dict[str, Union[int, float]]]:
+    def order_items(self) -> Dict[str, Dict[str, Union[int, float]]]:
         """Returns a nested dictionary of the receipt items.
 
         Returns:
