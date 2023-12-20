@@ -9,7 +9,7 @@ from src.ReceiptClasses import Receipt
 class SainsburysReceipt(Receipt):
     
     def __init__(self, pdf_file: str):
-        """
+        """Initialize a SainsburysReceipt object.
 
         Args:
             pdf_file (str): Path to the receipt PDF file.
@@ -43,7 +43,7 @@ class SainsburysReceipt(Receipt):
         Find the unique order ID by browsing through its content.
         """
 
-        for line in self._content:
+        for line in self._raw_content:
             
             # Look for order ID by splitting by colon ":"
             if line.startswith("Your receipt for order: "):
@@ -62,7 +62,7 @@ class SainsburysReceipt(Receipt):
         """
 
         # The time contains multiple colons. Therefore we look for the first colon only.
-        for line in self._content:
+        for line in self._raw_content:
             
             # The time contains multiple colons. Therefore we look for the first colon only.
             if line.startswith("Slot time:"):
@@ -108,13 +108,13 @@ class SainsburysReceipt(Receipt):
         item_dict = {}
 
         # Filter content to information on the orders only
-        for index, line in enumerate(self._content):
+        for index, line in enumerate(self._raw_content):
             if line.startswith("Delivery summary"):
                 start_index = index
             elif line.startswith("Order summary"):
                 end_index = index
         
-        filtered_content = self._content[start_index + 1: end_index]
+        filtered_content = self._raw_content[start_index + 1: end_index]
 
         # Initialize lists
         previous_line = ''         # In case a single item spans multiple rows. See logic below.
