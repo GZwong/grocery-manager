@@ -6,7 +6,7 @@ from typing import Union
 
 # Project-specific Imports
 from path_management.base import get_database_path
-from data_management.OrderDataManager import OrderDataManager
+from database_management.OrderDataManager import OrderDataManager
 
 
 # Absolute Path to the sqlite3 database
@@ -212,7 +212,7 @@ class UserDataManager():
         # This iterates across every row and column for user_df and update the corresponding entry within the database
         # TODO: change to more efficient methods
         with sqlite3.connect(DATABASE_FILE) as conn:
-            # For every row within user_df
+            # For every row within user_df 
             for index, row in user_df.iterrows():
                 item_id = row['item_id']
 
