@@ -1,57 +1,68 @@
-import pandas as pd
 from datetime import datetime as dt
 from pypdf import PdfReader
+from typing import Dict, Union
 
 # Project-specific Imports
 from src.ReceiptClasses import Receipt
 
-# TODO: Create another Receipt class to be inherited (in case of other receipts)
 
 class SainsburysReceipt(Receipt):
     
-    def __init__(self, pdf_file):
+    def __init__(self, pdf_file: str):
+        """
 
-        self._file = pdf_file
+        Args:
+            pdf_file (str): Path to the receipt PDF file.
+        """
+        # List of raw PDF lines
+        self._raw_content = self._parse_receipt(pdf_file)
         
-        self._content = None           # A list of PDF lines (Raw)
-        self._order_id = None          # Order ID
-        self._order_date = None        # Order Date
-        self._item_dict = None         # List of dictionaries containing info for each item
+        # Order ID, time and items
+        self._order_id = self._find_order_id()
+        self._order_time = self._find_order_time()
+        self._item_dict = self._find_items_info()
+  
 
-        self._parse_receipt()
-        # Order ID and time
-        self._find_order_id_time()
-        # Order Items
-        self._find_items_info()
-  
-  
-    def _parse_receipt(self):
+    def _parse_receipt(self, pdf_file: str):
         """
         Uses the PdfReader module to read and parse the receipts pdf into a list, each element
         representing a line in the receipt.
         """
-        reader = PdfReader(self._file)
+        reader = PdfReader(pdf_file)
 
         pdf_content = []
         for page in reader.pages:
             text = page.extract_text()  # This returns a single string of everything on the pdf
             lines = text.split("\n")    # This creates a list for each line
             pdf_content.extend(lines)   # Extend it to the pdf_content list
-        self._content = pdf_content
-        
+        return pdf_content
 
-    def _find_order_id_time(self):
+
+    def _find_order_id(self) -> int:
         """
-        Uses the PdfReader module to read and parse the receipts pdf into a list, each element
-        representing a line in the receipt.
+        Find the unique order ID by browsing through its content.
         """
-    
+
         for line in self._content:
             
             # Look for order ID by splitting by colon ":"
             if line.startswith("Your receipt for order: "):
                 _, order_id = line.split(':')  # Split into ["Your receipt for order:", order_id] 
                 order_id = order_id.strip()    # Use strip to remove any leading/trailing whitespace
+                break
+
+        order_id = int(order_id)  # Ensure type consistency
+
+        return order_id
+
+        
+    def _find_order_time(self) -> dt:
+        """
+        Find the order time by browsing through its content.
+        """
+
+        # The time contains multiple colons. Therefore we look for the first colon only.
+        for line in self._content:
             
             # The time contains multiple colons. Therefore we look for the first colon only.
             if line.startswith("Slot time:"):
@@ -72,14 +83,17 @@ class SainsburysReceipt(Receipt):
         order_date = f"{day} {date} {month} {year}"
         order_date = dt.strptime(order_date, r'%A %d %B %Y')
         
-        # Save permanently as attributes
-        self._order_id = order_id
-        self._order_date = order_date
+        return order_date
 
-    def _find_items_info(self):
+
+    def _find_items_info(self) -> Dict[str, Dict[str, Union[int, float]]]:
         """
-        Decouple each item into its "Name", "Quantity", "Weight" and "Price",
-        then store them as a list of dictionaries.
+        Store a nested dictionary into self._item_dict in the form:
+
+        {
+            "Item1": {"Quantity": 1, "Weight": 0.708kg, "Price": 4.00}.
+            "Item2": {"Quantity": 3, "Weight":    None, "Price": 2.99}
+        }
 
         Implementation Logic:
             1. The "amount" of an item is either:
@@ -90,6 +104,8 @@ class SainsburysReceipt(Receipt):
             3. Prices are the numeric values occuring after £
             4. For long orders (multi-lines) check whether the £ symbol appears. If it does not, append it to the next line
         """
+        # Empty dictionary to store items
+        item_dict = {}
 
         # Filter content to information on the orders only
         for index, line in enumerate(self._content):
@@ -146,33 +162,39 @@ class SainsburysReceipt(Receipt):
                 price = order[pound_index + 1:]
             
                 # Amount can either be quantity or weight. Store it as 'weight' if it ends with 'kg'.
-                # TODO: Add other units in the future.
                 if amount.endswith("kg"):
-                    weight = amount
+                    amount = amount[:-2]   # Strip away "kg"
+                    weight = float(amount)
                     quantity = None
                 else:
                     weight = None
-                    quantity = amount
+                    quantity = int(amount)
 
-                # Append information to the list of dictionaries
-                self._item_dict.append(
-                    {
-                        "Name": name,
-                        "Quantity": int(quantity),
-                        "Weight": weight,
-                        "Price": float(price)
-                    }
-                )
+            # Store items as a list of dictionaries
+            item_dict[name] = {"Quantity": quantity, "Weight": weight, "Price": price}
     
+
+    # Getters ------------------------------------------------------------------
     @property
-    def order_id(self):
+    def order_id(self) -> int:
         return self._order_id
     
     @property
-    def order_date(self):
-        return self._order_date
-    
+    def order_time(self) -> dt:
+        return self._order_time
+
     @property
-    def items(self):
+    def items(self) -> Dict[str, Dict[str, Union[int, float]]]:
+        """Returns a nested dictionary of the receipt items.
+
+        Returns:
+            Dict[str, Dict[str, Union[int, float]]]:
+                Nested dictionary of order items, with item names as the keys.
+                For example:
+
+                {
+                    "Item1": {"Quantity": 1, "Weight": 0.708kg, "Price": 4.00}.
+                    "Item2": {"Quantity": 3, "Weight":    None, "Price": 2.99}
+                }
+        """
         return self._item_dict
-    
