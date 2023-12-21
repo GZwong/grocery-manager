@@ -2,7 +2,7 @@
 import sqlite3
 import pandas as pd
 from datetime import datetime
-from typing import Union
+from typing import Dict, Union
 
 # Project-specific Imports
 from path_management.base import get_database_path
@@ -144,7 +144,6 @@ class UserDataManager():
     def delete_user(self, username: str):
         """Delete all rows from the database where user_id is the same as specified"""
         
-        
         # If this user does not exists, then terminate the function
         if username not in self.get_usernames():
             return None
@@ -156,7 +155,7 @@ class UserDataManager():
         """
         with sqlite3.connect(DATABASE_FILE) as conn:
             conn.execute(query, (username, ))
-            
+
     
     def show_user_df(self):
         """

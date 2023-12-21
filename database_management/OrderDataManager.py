@@ -47,7 +47,7 @@ class OrderDataManager():
         
     
     # DATABASE MANAGEMENT
-    # ------------------------------------------------------------------------------------------------------------------   
+    # -------------------------------------------------------------------------- 
     def _create_order_tables(self):
         """Create two tables "order_info" and "order_items" to store all information regarding the order."""
 
