@@ -1,9 +1,8 @@
 README.md
 setup.py
+data_management/OrderDataManager.py
+data_management/UserDataManager.py
 data_management/__init__.py
-data_management/database.py
-data_management/display_table.py
-data_management/read_data.py
 grocery_manager.egg-info/PKG-INFO
 grocery_manager.egg-info/SOURCES.txt
 grocery_manager.egg-info/dependency_links.txt

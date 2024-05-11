@@ -1,6 +1,16 @@
+"""
+This script contains the main class for parsing and storing data of a Sainsbury
+receipt.
+
+This file can be ran to verify the parsing logic.
+"""
+import argparse
 import pandas as pd
 from datetime import datetime as dt
 from pypdf import PdfReader
+
+# Project-Specific Imports
+from path_management.base import get_base_path
 
 # TODO: Create another Receipt class to be inherited (in case of other receipts)
 
@@ -158,11 +168,10 @@ class SainsburysReceipt():
                         break
                 
                 # Using indices, categorize the information with their respective rows
-                amount = order[: item_index]
+                amount = order[: item_index].strip()  # .strip to remove whitespace from both sides
                 name = order[item_index: pound_index - 1]
                 price = order[pound_index + 1:]
                 
-            
                 # Amount can either be quantity or weight. Store it as 'weight' if it ends with 'kg'.
                 # Add other units in the future.
                 if amount.endswith("kg"):
@@ -237,4 +246,19 @@ class SainsburysReceipt():
     @property
     def item_df(self):
         return self._item_df
+    
+    
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(description="PDF file of Sainsbury's receipt")
+    parser.add_argument('--file', type=str, required=True, help="The path to the Sainsburys receipt.")
+    args = parser.parse_args()
+    file_path = args.file
+    print(f"The file specified is {file_path}")
+    
+    Receipt = SainsburysReceipt(file_path)   # TODO: search the file name within the receipts directory
+    
+    print(f'Order ID:   {Receipt.order_id}')
+    print(f"Order date: {Receipt.order_date}")
+    print(f"Orders:     {Receipt.item_df}")
     
