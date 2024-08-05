@@ -77,14 +77,16 @@ class SainsburysReceipt():
         # Convert the date string into a datetime object.
         # ----------
         # Split the time information into a two components [date (Thursday 3rd August 2023), time (9:00pm - 10:00pm)]
-        order_date, order_hours = order_time.split(',')
+        order_date, order_hour = order_time.split(',')
         # Further split the date information into day, date, month and year
         day, date, month, year = order_date.split()
         # Remove the suffixes from order_date by removing last two characters (st, nd, rd, th)
         date = date[:-2]
+        # Process the hour data, retaining only the starting time (e.g. 1:00pm - 2:00pm)
+        order_hour = order_hour.split(" - ")[0]
         # Rejoin the date information into a single string, then convert it into a datetime object
-        order_date = f"{day} {date} {month} {year}"
-        order_date = dt.strptime(order_date, r'%A %d %B %Y')
+        order_date = f"{day} {date} {month} {year} {order_hour}"
+        order_date = dt.strptime(order_date, r'%A %d %B %Y %I:%M%p')
         
         # Save permanently as attributes
         self._order_id = order_id
