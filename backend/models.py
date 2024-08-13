@@ -30,7 +30,9 @@ user_items = Table(
     'user_items',
     Base.metadata,
     Column('user_id', Integer, ForeignKey('users.user_id'), primary_key=True),
-    Column('item_id', Integer, ForeignKey('items.item_id'), primary_key=True)
+    Column('item_id', Integer, ForeignKey('items.item_id'), primary_key=True),
+    Column('weight', float, nullable=True),  # Optional for precise splitting
+    Column('quantity', float, nullable=True)
 )
 
 
@@ -160,7 +162,7 @@ class Receipt(Base):
     
     receipt_id: Mapped[int] = mapped_column(primary_key=True)
     slot_time: Mapped[float] = mapped_column(Float)
-    price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
+    total_price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
     group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.group_id', ondelete='CASCADE'))
     payment_card: Mapped[int]  # Last four digits of the payment card
     
@@ -223,10 +225,10 @@ class Item(Base):
     # Columns
     # -------------------------------------------------------------------------
     item_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255))
     receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.receipt_id'))
     quantity: Mapped[Optional[int]] = mapped_column(Integer)
     weight: Mapped[Optional[float]] = mapped_column(Float)
-    name: Mapped[str] = mapped_column(String(255))
     price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
     
     # Relationships
