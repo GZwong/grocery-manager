@@ -24,16 +24,19 @@ class SainsburysReceipt():
         self._filtered_content = None  # A list of strings for items
         self._order_id = None          # Order ID
         self._order_date = None        # Order Date
+        self._total_price = None       # Total price of order
+        self._payment_card = None      # Last four digits of payment card
         self._quantities = None        # List of quantities for each item
         self._weights = None           # List of weights for each item
         self._names = None             # List of names for each item
         self._prices = None            # List of prices for each item
 
         self._item_df = None           # Pandas Dataframe of all orders
+        self.json = None               # JSON representation of order
         
         self._parse_receipt()
-        # Order ID and time
-        self._find_order_id_time()
+        # Order ID, time, price and card
+        self._find_order_info()
         # Order Items
         self._filter_content_to_items()
         self._find_items_info()
@@ -54,13 +57,13 @@ class SainsburysReceipt():
         self._content = pdf_content
         
 
-    def _find_order_id_time(self):
+    def _find_order_info(self):
         """
         Uses the PdfReader module to read and parse the receipts pdf into a list, each element
         representing a line in the receipt.
         """
     
-        for line in self._content:
+        for idx, line in enumerate(self._content):
             
             # Look for order ID by splitting by colon ":"
             if line.startswith("Your receipt for order: "):
@@ -72,7 +75,18 @@ class SainsburysReceipt():
                 first_colon_index = line.index(":")
                 order_time = line[first_colon_index + 1:]
                 order_time = order_time.strip()  # Use strip to remove any leading/trailing whitespace
-                break
+            
+            # The price is on the same line as "total paid"
+            if line.startswith("Total paid"):
+                _, total_price = line.split('£')
+                total_price = float(total_price.strip())
+            
+            # The actual card number exists on the line after this text
+            if line.startswith("We took payment on a card ending in"):
+                # Next line, first four characters is the payment card
+                payment_card = int(self._content[idx+1][0:4])
+                break  # Break here since no information is needed after
+            
 
         # Convert the date string into a datetime object.
         # ----------
@@ -91,7 +105,8 @@ class SainsburysReceipt():
         # Save permanently as attributes
         self._order_id = order_id
         self._order_date = order_date
-        
+        self._total_price = total_price
+        self._payment_card = payment_card
 
     def _filter_content_to_items(self):
         """
@@ -235,6 +250,16 @@ class SainsburysReceipt():
                 'price': decoupled_prices
             }
         )
+        
+    def _jsonify_receipt(self):
+        """
+        Store the receipt information into a JSON-like dictionary.
+        """
+        self.json = {
+            "receipt_id": self._order_id,
+            "slot_time": self._order_date,  # May need to convert to Unix epoch
+            "total_price": self._total_price
+            }
     
     
     @property
@@ -244,6 +269,14 @@ class SainsburysReceipt():
     @property
     def order_date(self):
         return self._order_date
+    
+    @property
+    def total_price(self):
+        return self._total_price
+    
+    @property
+    def payment_card(self):
+        return self._payment_card
     
     @property
     def item_df(self):
@@ -260,7 +293,9 @@ if __name__ == '__main__':
     
     Receipt = SainsburysReceipt(file_path)   # TODO: search the file name within the receipts directory
     
-    print(f'Order ID:   {Receipt.order_id}')
-    print(f"Order date: {Receipt.order_date}")
-    print(f"Orders:     {Receipt.item_df}")
+    print(f'Order ID:     {Receipt.order_id}')
+    print(f"Order date:   {Receipt.order_date}")
+    print(f'Total price:  {Receipt.total_price}')
+    print(f'Payment card: {Receipt.payment_card}')
+    print(f"Orders:       {Receipt.item_df}")
     
