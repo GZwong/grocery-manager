@@ -194,7 +194,6 @@ class SainsburysReceipt():
                 # Add other units in the future.
                 if amount.endswith("kg"):
                     weight = float(amount[:-2])  # Strip the 'kg' characters
-                    print("weight is", weight)
                     quantity = None
                 else:
                     weight = None
