@@ -32,7 +32,7 @@ class SainsburysReceipt():
         self._prices = None            # List of prices for each item
 
         self._item_df = None           # Pandas Dataframe of all orders
-        self.json = None               # JSON representation of order
+        self._json = None              # JSON representation of order
         
         self._parse_receipt()
         # Order ID, time, price and card
@@ -41,6 +41,7 @@ class SainsburysReceipt():
         self._filter_content_to_items()
         self._find_items_info()
         self._process_item_info()
+        self._jsonify_receipt()
   
     def _parse_receipt(self):
         """
@@ -192,7 +193,8 @@ class SainsburysReceipt():
                 # Amount can either be quantity or weight. Store it as 'weight' if it ends with 'kg'.
                 # Add other units in the future.
                 if amount.endswith("kg"):
-                    weight = amount
+                    weight = float(amount[:-2])  # Strip the 'kg' characters
+                    print("weight is", weight)
                     quantity = None
                 else:
                     weight = None
@@ -200,7 +202,7 @@ class SainsburysReceipt():
 
                 # Append to each list
                 quantities.append(quantity)            # Quantity stored as integers
-                weights.append(weight)                 # Weight stored as strings
+                weights.append(weight)                 # Weight stored as floats
                 names.append(name)                     # Item names stored as strings
                 prices.append(float(price))            # Price stored as floats
 
@@ -255,11 +257,18 @@ class SainsburysReceipt():
         """
         Store the receipt information into a JSON-like dictionary.
         """
-        self.json = {
+        self._json = {
             "receipt_id": self._order_id,
-            "slot_time": self._order_date,  # May need to convert to Unix epoch
-            "total_price": self._total_price
+            "slot_time": dt.timestamp(self._order_date),  # Convert to Unix epoch
+            "items": [],
+            "total_price": self._total_price,
+            "payment_card": self._payment_card
             }
+        
+        for quantity, weight, name, price in zip(self._quantities, self._weights, self._names, self._prices):
+            item_entry = {"name": name, "quantity": quantity, "weight": weight, "price": price}
+            self._json["items"].append(item_entry)
+        
     
     
     @property
@@ -282,6 +291,10 @@ class SainsburysReceipt():
     def item_df(self):
         return self._item_df
     
+    @property
+    def json(self):
+        return self._json
+    
     
 if __name__ == '__main__':
     
@@ -298,4 +311,5 @@ if __name__ == '__main__':
     print(f'Total price:  {Receipt.total_price}')
     print(f'Payment card: {Receipt.payment_card}')
     print(f"Orders:       {Receipt.item_df}")
+    print(f"Receipt Json: {Receipt.json}")
     
