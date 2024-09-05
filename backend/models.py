@@ -31,8 +31,8 @@ user_items = Table(
     Base.metadata,
     Column('user_id', Integer, ForeignKey('users.user_id'), primary_key=True),
     Column('item_id', Integer, ForeignKey('items.item_id'), primary_key=True),
-    Column('weight', float, nullable=True),  # Optional for precise splitting
-    Column('quantity', float, nullable=True)
+    Column('weight', Float, nullable=True),  # Optional for precise splitting
+    Column('quantity', Integer, nullable=True)
 )
 
 
@@ -51,7 +51,7 @@ class Group(Base):
     
     # ----- Columns -----
     group_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    group_name: Mapped[str] = mapped_column(String(10))  # VARCHAR(20)
+    group_name: Mapped[str] = mapped_column(String(10), unique=True)  # VARCHAR(20)
     description: Mapped[str] = mapped_column(String(50))  # VARCHAR(50)
     
     
@@ -60,39 +60,6 @@ class Group(Base):
     users: Mapped[List["User"]] = relationship("User", secondary=user_groups, back_populates="groups")
     # A group can have multiple receipts
     receipts: Mapped[List["Receipt"]] = relationship("Receipt", back_populates="group")
-    
-    @classmethod
-    def get_all_group_names(cls, session: Session):
-        """Return a list of all group names."""
-        return session.query(cls.name).scalars().all()
-    
-    @classmethod
-    def group_exists(cls, session: Session, group_name: str) -> bool:
-        """Check if a group exists within the 'groups' data table."""
-        result = session.query(cls).filter_by(group_name=group_name).first()
-        return result is not None
-    
-    # @classmethod
-    # def add_user_to_group(cls, username: str, group_name:int, session: Session) -> bool:
-    #     """Add a user to a group."""
-    #     # # Verify that the user and group already exists in the 'users' and 'groups' table
-    #     # if not User.user_exists(session, username) and cls.group_exists(session, group_name):
-    #     #     print("User or group does not exist.")
-    #     #     return None
-        
-    #     # # Add new record to user_groups
-        
-    @classmethod
-    def add_receipt_to_group(cls, session: Session, receipt: Receipt, group: Group) -> bool:
-        """Add a receipt to a group
-
-        Args:
-            receipt (Receipt): _description_
-            group (Group): _description_
-
-        Returns:
-            bool: Return true if receipt is successfully added
-        """
     
     def __repr__(self) -> str:
         return f"Group(id={self.group_id!r}, name = {self.name!r}, description = {self.description!r})"
@@ -117,41 +84,6 @@ class User(Base):
     
     # Methods
     # -------------------------------------------------------------------------
-    @classmethod
-    def get_all_users(cls, session: Session) -> Tuple["User"]:
-        """Return all users in the database in the form of a User object, useful for accessing
-        the attributes of users"""
-        return session.query(cls).all()
-    
-    @classmethod
-    def user_exists(cls, session: Session, username: str) -> bool:
-        """Given a username, return True if user exists and False otherwise."""
-        result = session.query(cls).filter_by(username=username).first()
-        return result is not None
-    
-    @classmethod
-    def get_usernames_in_group(cls, session: Session, group_id: int) -> Tuple[str]:
-        """Return a tuple of usernames within a specified group"""
-        # NOTE: '.c' is a shorthand for columns
-        usernames = session.query(User.username).join(user_groups).filter(user_groups.c.group_id == group_id).all()
-        return usernames
-    
-    @classmethod
-    def add_items_to_user(session: Session, item_id: int, user_id: int):
-        """Add an item
-
-        Args:
-            session (Session): A SQLAlchemy Session object.
-            item_id (int): 
-            user_id (int): 
-        """
-        
-        user = session.query(User).filter_by(user_id=user_id).one_or_none()
-        item = session.query(Item).filter_by(item_id=item_id).one_or_none()
-
-        if user and item:  # Must be existing user and item
-            user.items.append(item)  # Update association table 'user_items'
-    
     def __repr__(self) -> str:
         return f"User"
 
@@ -170,50 +102,7 @@ class Receipt(Base):
     # Bi-directional relationship - plural 'items' as a receipt can contain multiple items
     items: Mapped[List[Item]] = relationship("Item", back_populates="receipt", cascade="all, delete-orphan")
     group: Mapped[Group] = relationship("Group", back_populates="receipts")
-    
-    # ----- Methods -----
-    @classmethod
-    def get_all_receipts(cls, session: Session) -> list[Receipt]:
-        """Get A LIST of all receipts as a Receipt object
-
-        Args:
-            session (Session): The SQLAlchemy session object.
-
-        Returns:
-            _type_: _description_
-        """
-        return session.query(cls).all()
-    
-    @classmethod
-    def get_all_receipt_dates(cls, session: Session) -> list[float]:
-        """Get a list of all receipt dates in timestamps.
-
-        Args:
-            session (Session): The SQLAlchemy session object
-
-        Returns:
-            list[float]: A list of all receipt dates returned as timestamps.
-        """
-        return session.query(cls.slot_time).all()
-    
-    @classmethod
-    def delete_receipt_by_id(cls, session: Session, receipt_id: int) -> bool:
-        """Delete a receipt by its id.
-
-        Args:
-            session (Session): The SQLAlchemy session object.
-            receipt_id (int): The ID of the receipt to delete.
-
-        Returns:
-            bool: True if the receipt was deleted, False if not found
-        """
-        receipt = session.query(cls).filter_by(id=receipt_id).one_or_none()
-        if receipt:
-            session.delete(receipt)
-            session.commit()
-            return True
-        return False
-    
+     
     def __repr__(self):
         return f"Receipt ID: {self.receipt_id!r}, delivered at {self.slot_time!r}, paid GBP{self.price!r} with card no. {self.payment_card!r}"
     
