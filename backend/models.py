@@ -16,7 +16,7 @@ DATABASE_FILE = get_database_path()
 class Base(DeclarativeBase): pass
 
 
-# ----- Association Tables ----- 
+# Association Tables ---------------------------------------------------------- 
 # Many-to-many relationships - e.g., a user can be in multiple groups, and a 
 # group consists of multiple users.
 user_groups = Table(
@@ -36,7 +36,7 @@ user_items = Table(
 )
 
 
-# ----- Data Tables -----
+# Data Tables -----------------------------------------------------------------
 class Group(Base):
     """
     SQLALchemy Database entry object.
@@ -49,7 +49,7 @@ class Group(Base):
     
     __tablename__ = "groups"
     
-    # ----- Columns -----
+    # ----- Columns ----- 
     group_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     group_name: Mapped[str] = mapped_column(String(10), unique=True)  # VARCHAR(20)
     description: Mapped[str] = mapped_column(String(50))  # VARCHAR(50)
@@ -61,6 +61,7 @@ class Group(Base):
     # A group can have multiple receipts
     receipts: Mapped[List["Receipt"]] = relationship("Receipt", back_populates="group")
     
+    # ----- Methods -----
     def __repr__(self) -> str:
         return f"Group(id={self.group_id!r}, name = {self.name!r}, description = {self.description!r})"
     
@@ -69,21 +70,18 @@ class User(Base):
     
     __tablename__ = "users"
     
-    # Columns
-    # -------------------------------------------------------------------------
+    # ----- Columns -----
     user_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(10))
     # password_hashed: Mapped[str] = mapped_column(String(50))
     
-    # Relationships
-    # -------------------------------------------------------------------------
+    # ----- Relationships -----
     # A user can join multiple groups
     groups: Mapped[List[Group]] = relationship("Group", secondary=user_groups, back_populates="users")
     # A user can have multiple items
     items: Mapped[List[Item]] = relationship("Item", secondary=user_items, back_populates="users")
     
-    # Methods
-    # -------------------------------------------------------------------------
+    # ----- Methods -----
     def __repr__(self) -> str:
         return f"User"
 
@@ -92,17 +90,21 @@ class Receipt(Base):
     
     __tablename__ = "receipts"
     
+    # ----- Columns -----
     receipt_id: Mapped[int] = mapped_column(primary_key=True)
     slot_time: Mapped[float] = mapped_column(Float)
     total_price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
     group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.group_id', ondelete='CASCADE'))
     payment_card: Mapped[int]  # Last four digits of the payment card
+    locked_by: Mapped[bool] = mapped_column(Integer)          # User ID of whoever is opening the receipt
+    lock_timestamp: Mapped[DECIMAL] = mapped_column(DECIMAL)  # Timestamp of locks
     
     # ----- Relationships -----
     # Bi-directional relationship - plural 'items' as a receipt can contain multiple items
     items: Mapped[List[Item]] = relationship("Item", back_populates="receipt", cascade="all, delete-orphan")
     group: Mapped[Group] = relationship("Group", back_populates="receipts")
-     
+    
+    # ----- Methods -----
     def __repr__(self):
         return f"Receipt ID: {self.receipt_id!r}, delivered at {self.slot_time!r}, paid GBP{self.price!r} with card no. {self.payment_card!r}"
     
@@ -111,8 +113,7 @@ class Item(Base):
     
     __tablename__ = "items"
     
-    # Columns
-    # -------------------------------------------------------------------------
+    # ----- Columns -----
     item_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255))
     receipt_id: Mapped[int] = mapped_column(ForeignKey('receipts.receipt_id'))
@@ -120,8 +121,7 @@ class Item(Base):
     weight: Mapped[Optional[float]] = mapped_column(Float)
     price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
     
-    # Relationships
-    # -------------------------------------------------------------------------
+    # ----- Relationships -----
     # One-to-many - an item only belong to one receipt
     receipt: Mapped[User] = relationship("Receipt", back_populates="items")
     # Many-to-many - An item can belong to multiple users
