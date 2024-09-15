@@ -5,12 +5,16 @@ receipt.
 This file can be ran to verify the parsing logic.
 """
 import argparse
-import pandas as pd
+import logging
+from typing import List, Dict
 from datetime import datetime as dt
+
+# Third-Party Imports
+import pandas as pd
 from pypdf import PdfReader
 
 # Project-Specific Imports
-from path_management.base import get_base_path
+from ..app_logger import logger
 
 # TODO: Create another Receipt class to be inherited (in case of other receipts)
 
@@ -19,6 +23,8 @@ class SainsburysReceipt():
     def __init__(self, pdf_file):
 
         self._file = pdf_file
+        
+        logger.info(f"Receipt File Type is {type(self._file)}")
         
         self._content = None           # A list of PDF lines (Raw)
         self._filtered_content = None  # A list of strings for items
@@ -252,13 +258,19 @@ class SainsburysReceipt():
             }
         )
         
+        # Store items as a list
+        self._item_list = []
+        for quantity, weight, item, price in zip(self._quantities, self._weights, self._names, self._prices):
+            self._item_list.append({"item_name": item, "quantity": quantity, "weight": weight, "price": price})
+
+        
     def _jsonify_receipt(self):
         """
         Store the receipt information into a JSON-like dictionary.
         """
         self._json = {
             "receipt_id": self._order_id,
-            "slot_time": dt.timestamp(self._order_date),  # Convert to Unix epoch
+            "slot_time": self._order_date,
             "items": [],
             "total_price": self._total_price,
             "payment_card": self._payment_card
@@ -271,27 +283,31 @@ class SainsburysReceipt():
     
     
     @property
-    def order_id(self):
+    def order_id(self) -> int:
         return self._order_id
     
     @property
-    def order_date(self):
+    def order_date(self) -> dt:
         return self._order_date
     
     @property
-    def total_price(self):
+    def total_price(self) -> float:
         return self._total_price
     
     @property
-    def payment_card(self):
+    def payment_card(self) -> int:
         return self._payment_card
     
     @property
-    def item_df(self):
+    def item_df(self) -> pd.DataFrame:
         return self._item_df
     
     @property
-    def json(self):
+    def item_list(self) -> List[Dict]:
+        return self._item_list
+    
+    @property
+    def json(self) -> dict:
         return self._json
     
     

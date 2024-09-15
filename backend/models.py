@@ -1,18 +1,18 @@
 """
 Define the database metadata.
-Run this file to verify database metadata.
 """
 # Standard Imports
 from __future__ import annotations
+from datetime import datetime
 from typing import List, Tuple, Optional
+
 # Third Party Imports
-from sqlalchemy import Table, ForeignKey, String, create_engine, Column, Integer, Float, String, DECIMAL
+from sqlalchemy import Table, ForeignKey, String, create_engine, Column, Integer, Float, String, DECIMAL, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker, Session
+
 # Project-Specific Imports
-from path_management.base import get_database_path
 
 
-DATABASE_FILE = get_database_path()
 class Base(DeclarativeBase): pass
 
 
@@ -22,15 +22,15 @@ class Base(DeclarativeBase): pass
 user_groups = Table(
     'user_groups',
     Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.user_id'), primary_key=True),
-    Column('group_id', Integer, ForeignKey('groups.group_id'), primary_key=True)
+    Column('user_id', Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True),
+    Column('group_id', Integer, ForeignKey('groups.group_id', ondelete='CASCADE'), primary_key=True)
 )
 
 user_items = Table(
     'user_items',
     Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.user_id'), primary_key=True),
-    Column('item_id', Integer, ForeignKey('items.item_id'), primary_key=True),
+    Column('user_id', Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True),
+    Column('item_id', Integer, ForeignKey('items.item_id', ondelete='CASCADE'), primary_key=True),
     Column('weight', Float, nullable=True),  # Optional for precise splitting
     Column('quantity', Integer, nullable=True)
 )
@@ -42,17 +42,18 @@ class Group(Base):
     SQLALchemy Database entry object.
 
     Args:
-        id (int): Group ID as the primary key. Autoincremented.
+        id (int): Group ID as the primary key, Autoincremented
         group_name (VARCHAR(20)): Name of the group
-        description(VARCHAR(50)): Description of the group, such as rules.
+        description(VARCHAR(50)): Description of the group, such as rules
     """
     
     __tablename__ = "groups"
     
     # ----- Columns ----- 
     group_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    group_name: Mapped[str] = mapped_column(String(10), unique=True)  # VARCHAR(20)
-    description: Mapped[str] = mapped_column(String(50))  # VARCHAR(50)
+    # Use string as it is more flexible to database types
+    group_name: Mapped[str] = mapped_column(String(20), unique=True)
+    description: Mapped[str] = mapped_column(String(100))
     
     
     # ----- Relationships -----
@@ -67,13 +68,23 @@ class Group(Base):
     
 
 class User(Base):
+    """
+    SQLAlchemy Database entry object.
+    
+    Args:
+        user_id (int): User ID as the primary key, autoincremented
+        username (String(10)): Username
+        hashed_password (VARCHAR(100)): Hashed password of the user
+        email (VARCHAR(100)): User Email, for forgotten password
+    """
     
     __tablename__ = "users"
     
     # ----- Columns -----
     user_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String(10))
-    # password_hashed: Mapped[str] = mapped_column(String(50))
+    username: Mapped[str] = mapped_column(String(20))
+    hashed_password: Mapped[str] = mapped_column(String(100))
+    email: Mapped[str] = mapped_column(String(100))  # Needed for password reset
     
     # ----- Relationships -----
     # A user can join multiple groups
@@ -87,17 +98,29 @@ class User(Base):
 
 
 class Receipt(Base):
+    """
+    SQLAlchemy Database entry object.
+    
+    Args:
+        receipt_id (int): Assigned Receipt ID
+        slot_time (float): Time in UNIX epoch
+        total_price (Decimal): Price of the receipt
+        group_id (int): Group which the receipt belongs to.
+        payment_card (int): Last four digit of a payment card
+        locked_by (int): User ID of whoever is opening the receipt
+        lock_timestamp (Decimal): The timestamp since the last user locked it
+    """
     
     __tablename__ = "receipts"
     
     # ----- Columns -----
     receipt_id: Mapped[int] = mapped_column(primary_key=True)
-    slot_time: Mapped[float] = mapped_column(Float)
+    slot_time: Mapped[datetime] = mapped_column(DateTime)
     total_price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
     group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.group_id', ondelete='CASCADE'))
     payment_card: Mapped[int]  # Last four digits of the payment card
-    locked_by: Mapped[bool] = mapped_column(Integer)          # User ID of whoever is opening the receipt
-    lock_timestamp: Mapped[DECIMAL] = mapped_column(DECIMAL)  # Timestamp of locks
+    locked_by: Mapped[int] = mapped_column(Integer)          # User ID of whoever is opening the receipt
+    lock_timestamp: Mapped[datetime] = mapped_column(DateTime)  # Timestamp of locks
     
     # ----- Relationships -----
     # Bi-directional relationship - plural 'items' as a receipt can contain multiple items
@@ -110,6 +133,17 @@ class Receipt(Base):
     
 
 class Item(Base):
+    """
+    SQLAlchemy Database entry object.
+    
+    Args:
+        item_id (int): Primary key for an item, autoincremented
+        name (string): Full item name
+        receipt_id (int): Receipt ID
+        quantity (int): Quantity of the item, if applicable.
+        weight (float): Weight of the item, if applicable.
+        price (Decimal): Price of the item.
+    """
     
     __tablename__ = "items"
     
@@ -126,33 +160,4 @@ class Item(Base):
     receipt: Mapped[User] = relationship("Receipt", back_populates="items")
     # Many-to-many - An item can belong to multiple users
     users: Mapped[User] = relationship("User", secondary=user_items, back_populates="items")
-
-    
-if __name__ == "__main__":
-    # Create an engine as a means to connect
-    engine = create_engine(f"sqlite:///{DATABASE_FILE}")
-
-    # Create the datatables
-    Base.metadata.create_all(engine)
-    
-    # Setup data to be inserted or modified
-    group1 = Group(group_name="Honeysuckle", description="Sleeping")
-    group2 = Group(group_name="Broadlands", description="The rich house")
-    user1 = User(username="Gai Zhe")
-    user2 = User(username="Kelly")
-    
-    group1.users.append(user1)
-    group2.users.append(user1)
-    group2.users.append(user2)
-
-    # Begin a session
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    session.add(group1)
-    session.add(group2)
-    
-
-    # Commit and close the session
-    session.commit()
-    session.close()
 
