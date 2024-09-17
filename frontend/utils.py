@@ -36,6 +36,14 @@ def get_user_email(user_id: int):
         return response.json()['email']
     return None
 
+def get_all_groups() -> List[Dict]:
+    
+    response = requests.get(f"{BASE_URL}/groups/get-all")
+    
+    if response.status_code == 200:
+        return response.json()
+    return None
+
 def get_groups_joined_by_user(user_id: int):
     """
     Inputs
@@ -81,6 +89,17 @@ def create_group(name: str, description: str) -> bool:
         return True
     return False
 
+def delete_group(name: str) -> bool:
+    """
+    Return True if group is deleted, False if request failed.
+    """
+    data = {"group_name": name}
+    response = requests.delete(f"{BASE_URL}/groups/delete", json=data)
+    
+    if response.status_code == 200:
+        return True
+    return False
+
 
 def add_user_to_group(user_id: int, group_name: str) -> dict:
     
@@ -111,7 +130,7 @@ def get_receipt_list_in_group(group_id: int):
         - "total_price"
         - "payment_card"
     """
-    
+
     response = requests.get(f"{BASE_URL}/receipt/get-receipt-list/{group_id}")
     
     if response.status_code == 200:
@@ -130,9 +149,7 @@ def get_receipt_data(receipt_id: int):
 
 
 def get_users_in_receipt(receipt_id: int):
-    
     response = requests.get(f"{BASE_URL}/receipt/get/user-items/{receipt_id}")
-    
     if response.status_code == 200:
         if response:
             user_item_association = response.json()
@@ -142,9 +159,7 @@ def get_users_in_receipt(receipt_id: int):
         return False
     
 def update_user_item_association(data):
-    
     response = requests.put(f"{BASE_URL}/receipt/update/user-items", json=data)
-
     if response.status_code == 200:
         return True
     return False
@@ -166,48 +181,7 @@ def get_users_in_group(group_id: int) -> List[Dict]:
         ]
     Otherwise return False
     """
-    
     response = requests.get(f"{BASE_URL}/groups/in/{group_id}")
-    
     if response.status_code == 200:
         return response.json()
     return False
-
-# GROUPS ----------------------------------------------------------------------
-def get_all_groups() -> dict:
-    response = requests.get(f"{BASE_URL}/groups/all")
-    return response
-
-def update_group(old_name: str, new_name: str, new_description: str):
-    data = {"name": new_name, "description": new_description}
-    response = requests.post(f"{BASE_URL}/groups/update/{old_name}", json=data)
-    return response
-
-def delete_group(name: str):   
-    response = requests.delete(f"{BASE_URL}/groups/del/{name}")
-    return response.json()
-
-    
-def get_user_list():
-    response = requests.get(f"{BASE_URL}/users/all")
-    return response
-
-def delete_user(username: str) -> dict:
-    response = requests.delete(f"{BASE_URL}/users/del/{username}")
-    return response.json()
-
-def del_user_from_group(username: str, group_name: str) -> dict:
-    response = requests.delete(f"{BASE_URL}/del-user/{group_name}/{username}")
-    return response.json
-
-# RECEIPT
-
-def add_receipt(pdf_file, group_id: int):
-    pdf_data = {"group_id": group_id, "file": pdf_file.get_value()}
-    response = requests.post(f"{BASE_URL}/receipts/add/", files=pdf_data)
-    return response
-
-# USER-ITEM ASSOCIATIONS
-def get_user_item_associations(receipt_id: int):
-    response = requests.get(f"{BASE_URL}/receipts/get/{receipt_id}")
-    return response

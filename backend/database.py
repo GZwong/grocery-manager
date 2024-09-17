@@ -36,8 +36,7 @@ def SessionLocal():
     
     try:
         yield session
-        if session.dirty:
-            session.commit()
+        session.commit()
         
     except Exception as e:
         session.rollback()

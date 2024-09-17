@@ -19,10 +19,9 @@ def get_groups():
         with SessionLocal() as session:
 
             groups = session.query(Group).all()
-            # TODO: May switch to just ID and name in the future to reduce memory consumption. For now only description is extra
             return jsonify([{
-                "id": group.group_id,
-                "name": group.group_name,
+                "group_id": group.group_id,
+                "group_name": group.group_name,
                 "description": group.description
             } for group in groups]), 200
         

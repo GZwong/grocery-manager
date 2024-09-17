@@ -92,5 +92,6 @@ class CredentialsManager(object):
                 
                 if register_state.status_code == 200:
                     st.success("Registration successful!")
+                    st.rerun()
                 else:
                     st.error(f"Error, {register_state.json()}")

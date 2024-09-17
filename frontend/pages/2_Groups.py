@@ -3,7 +3,6 @@ from typing import List, Dict
 import pandas as pd
 import streamlit as st
 from datetime import datetime as dt
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 from frontend import utils
 
 from frontend.layouts.LoginUtils import CredentialsManager
@@ -40,10 +39,70 @@ else:
     user_id = st.session_state['user_id']
     username = utils.get_username(user_id)
     st.session_state['username'] = username
+
+    # Get all groups joined by user
+    group_list = utils.get_groups_joined_by_user(user_id)
+    
+    # Join Groups    
+    group_name_to_join = st.text_input(
+        "Join a group 👇",
+        placeholder="Group Name",
+    )
+    if group_name_to_join:
+        if utils.add_user_to_group(user_id, group_name_to_join):
+            st.success("You have been added to the group!")
+            st.rerun()
+          
+    # Stop rendering the rest if user has not joined any groups  
+    if not group_list:
+        st.stop()
+    
+    st.divider()
+    
+    # Show all joined groups
+    st.header("Joined Groups")
+    
+    # Create an expander for each group
+    for idx, group in enumerate(group_list):
+        
+        with st.expander(f"{group['group_name']}"):
+            
+            st.caption(group["description"])
+            
+            col1, col2, col3 = st.columns([5, 3, 2])
+            
+            # Look at receipt button
+            with col1:
+                pass
+            
+            # Add Other User(s) Button
+            with col2:
+                username_to_add = st.text_input(label="Add a user 👇",
+                                                placeholder="Username",
+                                                # Pass unique key
+                                                key=f'add-user-{idx}')
+                if username_to_add:
+                    user_id_to_add = utils.get_user_id(username_to_add)
+                    if utils.add_user_to_group(user_id_to_add, group['group_name']):
+                        st.success("User added to group")
+                        st.rerun()
+            
+            # Delete Group Button - Add popover for confirmation
+            with col3:
+                with st.popover("Delete group"):
+                    st.caption("Are you sure you want to delete this group?")
+                    delete_button = st.button(label="Yes",
+                                            key=f'delete-group-{idx}')
+                    if delete_button:
+                        utils.delete_group(group['group_name'])
+                        st.rerun()
+                    
+    st.divider()
     
     # Form - Allow user to create a group
-    st.header("Create a group")
-    with st.form("Create a group"):
+    with st.form("Create a group", border=False):
+        
+        st.write("Create a group")
 
         # Fields
         group_name = st.text_input("Name")
@@ -60,31 +119,7 @@ else:
                 # The user joins the group upon creation
                 if utils.add_user_to_group(user_id, group_name):
                     st.success("You have been automatically added to the group!")
+                    st.rerun()
 
             else:
                 st.error("Group was not created, try again.")
-                    
-    st.divider()
-
-    # Get all groups that the user is in
-    group_list = utils.get_groups_joined_by_user(user_id)
-    
-    # User may not be associated with a group
-    if not group_list:
-        st.header("Join a group to view receipts!")
-        st.stop()
-
-    group_name_list = [group["group_name"] for group in group_list]
-
-    # Display groups as a table
-    group_df = pd.DataFrame(group_list)
-    group_df = group_df.\
-        drop(columns=['group_id']).reset_index(drop=True)\
-        .rename(columns={
-            'group_name': 'Group Name', 
-            'description': 'Description'
-            })
-    
-    st.header("Joined groups")
-    st.table(group_df)
-
