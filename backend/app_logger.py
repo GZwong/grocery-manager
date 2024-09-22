@@ -1,8 +1,8 @@
-# logging.py
+# Standard Imports
 import os
 import logging
 
-# Third Party Import
+# Third-Party Imports
 from dotenv import load_dotenv
 
 # Load environmental variable to check if logger is configured

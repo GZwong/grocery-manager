@@ -2,9 +2,9 @@
 from flask import Blueprint, request, jsonify
 
 # Project-Specific Imports
-from database import SessionLocal
-from models import Group, User, UserGroups
-from Authentication import Authentication
+from backend.database import SessionLocal
+from backend.models import Group, User, UserGroups
+from backend.Authentication import Authentication
 
 groups_blueprint = Blueprint('groups', __name__)
 auth = Authentication()

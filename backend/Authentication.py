@@ -3,8 +3,8 @@ from flask import session, jsonify
 from passlib.context import CryptContext
 
 # Project-Specific Imports
-from database import SessionLocal
-from models import User
+from backend.database import SessionLocal
+from backend.models import User
 
 
 class Authentication():

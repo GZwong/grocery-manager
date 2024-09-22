@@ -8,10 +8,10 @@ from sqlalchemy.sql import exists
 from flask import Blueprint, request, jsonify
 
 # Project-Specific Imports
-from database import SessionLocal
-from models import Group, User, Receipt, Item, UserItems, UserGroups, UserSpending
-from receipt_reader.SainsburysReceipt import SainsburysReceipt
-from app_logger import logger
+from backend.database import SessionLocal
+from backend.models import Group, User, Receipt, Item, UserItems, UserGroups, UserSpending
+from backend.receipt_reader.SainsburysReceipt import SainsburysReceipt
+from backend.app_logger import logger
 
 
 receipt_blueprint = Blueprint('receipt', __name__)
