@@ -6,7 +6,7 @@ from flask import Blueprint, request, jsonify, session, redirect, url_for
 
 from database import SessionLocal
 from models import Group, User, UserGroups
-from backend.Authentication import Authentication
+from Authentication import Authentication
 
 user_blueprint = Blueprint('user', __name__)
 

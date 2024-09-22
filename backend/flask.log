@@ -34,3 +34,62 @@
 2024-09-22 23:13:13,897 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
 2024-09-22 23:13:13,915 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 1
 2024-09-22 23:13:13,951 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:23,864 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:23,894 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:23,914 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-23 00:05:23,951 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:25,836 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:25,867 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:25,886 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-23 00:05:25,917 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:47,688 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:47,726 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:47,761 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-23 00:05:47,801 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:50,728 - receipt_reader/SainsburysReceipt.py:27 - INFO - Receipt File Type is <class 'werkzeug.datastructures.file_storage.FileStorage'>
+2024-09-23 00:05:50,853 - routes/receipt_routes.py:65 - DEBUG - Received valid receipt.
+2024-09-23 00:05:50,940 - routes/receipt_routes.py:98 - DEBUG - Receipt successfully added to group.
+2024-09-23 00:05:50,948 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:50,979 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:51,003 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-23 00:05:51,034 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:52,148 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:52,198 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:52,223 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-23 00:05:52,257 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:56,754 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:56,783 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:56,811 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:05:56,848 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:59,013 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:59,043 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:59,064 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:05:59,092 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:05:59,366 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:05:59,395 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:05:59,413 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:05:59,444 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:06:00,124 - routes/receipt_routes.py:158 - INFO - Added user ID 1 to receipt ID 3
+2024-09-23 00:06:00,134 - routes/receipt_routes.py:271 - DEBUG - Received user-cost data: {'user_id': 1, 'receipt_id': 3}
+2024-09-23 00:06:00,135 - routes/receipt_routes.py:303 - DEBUG - Preparing to add spending entry for user ID 1 on receipt ID 
+2024-09-23 00:06:00,363 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:06:00,396 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:06:00,424 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:06:00,456 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:06:02,741 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:06:02,771 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:06:02,802 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:06:02,835 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:06:03,565 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:06:03,596 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:06:03,627 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:06:03,657 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:06:05,588 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:06:05,618 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:06:05,643 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:06:05,673 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:06:07,355 - routes/receipt_routes.py:25 - DEBUG - Fetching receipt in group ID: 1
+2024-09-23 00:06:07,397 - routes/receipt_routes.py:40 - DEBUG - Sending receipt JSON...
+2024-09-23 00:06:07,416 - routes/receipt_routes.py:110 - DEBUG - Fetching item data for receipt ID: 3
+2024-09-23 00:06:07,447 - routes/receipt_routes.py:124 - DEBUG - Gathered receipt data to send.
+2024-09-23 00:06:08,296 - routes/receipt_routes.py:384 - DEBUG - Received user-cost data: [{'user_id': 1, 'receipt_id': 3, 'cost': 4.625}]
