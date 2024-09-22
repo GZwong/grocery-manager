@@ -1,11 +1,10 @@
-from typing import Tuple, Dict
-from sqlalchemy import select, insert
-from sqlalchemy.sql import exists
-from flask import Blueprint, request, jsonify, session
-from database import SessionLocal
-from models import Group, User, Receipt, Item, user_items, user_groups
+# Third-Party Imports
+from flask import Blueprint, request, jsonify
 
-from backend.Authentication import Authentication
+# Project-Specific Imports
+from database import SessionLocal
+from models import Group, User, UserGroups
+from Authentication import Authentication
 
 groups_blueprint = Blueprint('groups', __name__)
 auth = Authentication()
@@ -159,8 +158,8 @@ def get_users_in_group(group_id: int):
     """
     with SessionLocal() as session:
         users_in_group = session.query(User).join(
-            user_groups, User.user_id==user_groups.c.user_id
-        ).filter(user_groups.c.group_id==group_id)
+            UserGroups, User.user_id==UserGroups.c.user_id
+        ).filter(UserGroups.c.group_id==group_id)
     
     return jsonify([{
         "user_id": user.user_id,
@@ -198,21 +197,6 @@ def add_user_to_group():
             
             # Let the user join the group
             group.users.append(user)
-        
-        # Add rows for new user in user-items associations for existing receipts in group
-        # -----
-        # TODO: This might be a little expensive
-        # receipts_in_group = group.receipts
-        # for receipt in receipts_in_group:
-        #     for item in receipt.items:
-        #         stmt = insert(user_items).values(
-        #             user_id=user.user_id,
-        #             item_id=item.item_id,
-        #             quantity=None,
-        #             weight=None
-        #         )
-        #         session.execute(stmt)
-
         
         return jsonify({"status": "success"}), 200
     

@@ -5,7 +5,7 @@ from sqlalchemy.sql import exists
 from flask import Blueprint, request, jsonify, session, redirect, url_for
 
 from database import SessionLocal
-from models import Group, User, Receipt, Item, user_items, user_groups
+from models import Group, User, UserGroups
 from backend.Authentication import Authentication
 
 user_blueprint = Blueprint('user', __name__)
@@ -89,7 +89,7 @@ def get_groups_jonined_by_user(user_id: int):
     try:
         with SessionLocal() as session:
             groups_joined_by_user = session.query(Group).join(
-                user_groups, Group.group_id == user_groups.c.group_id
+                UserGroups, Group.group_id == UserGroups.c.group_id
             ).filter_by(user_id=user_id)
 
             return jsonify(

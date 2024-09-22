@@ -14,7 +14,7 @@ import pandas as pd
 from pypdf import PdfReader
 
 # Project-Specific Imports
-from ..app_logger import logger
+from app_logger import logger
 
 # TODO: Create another Receipt class to be inherited (in case of other receipts)
 

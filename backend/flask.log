@@ -1,0 +1,36 @@
+2024-09-22 23:09:26,298 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:09:26,335 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:09:26,357 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-22 23:09:26,396 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:00,632 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:00,668 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:00,700 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 1
+2024-09-22 23:13:00,732 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:03,523 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:03,554 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:03,580 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-22 23:13:03,617 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:05,031 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:05,063 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:05,090 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 1
+2024-09-22 23:13:05,129 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:06,397 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:06,431 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:06,457 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-22 23:13:06,493 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:07,875 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:07,942 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:07,967 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-22 23:13:07,996 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:08,674 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:08,727 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:08,754 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 1
+2024-09-22 23:13:08,787 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:12,280 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:12,559 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:12,597 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 2
+2024-09-22 23:13:12,766 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.
+2024-09-22 23:13:13,867 - routes/receipt_routes.py:22 - DEBUG - Fetching receipt in group ID: 1
+2024-09-22 23:13:13,897 - routes/receipt_routes.py:37 - DEBUG - Sending receipt JSON...
+2024-09-22 23:13:13,915 - routes/receipt_routes.py:107 - DEBUG - Fetching item data for receipt ID: 1
+2024-09-22 23:13:13,951 - routes/receipt_routes.py:121 - DEBUG - Gathered receipt data to send.

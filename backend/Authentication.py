@@ -1,11 +1,11 @@
-from functools import wraps
+# Third-Party Imports
 from flask import session, jsonify
 from passlib.context import CryptContext
-from sqlalchemy.orm import Session
 
+# Project-Specific Imports
+from database import SessionLocal
+from models import User
 
-from .database import SessionLocal
-from .models import Group, User, Receipt
 
 class Authentication():
     
@@ -34,26 +34,6 @@ class Authentication():
             1: The passwords are equal
         """
         return self._pwd_context.verify(plain_password, hashed_password)
-    
-    def login_required(self, f):
-        """
-        Serve as a decorator to decorate any routes that require login by
-        checking if 'user_id' is within the client cookie.
-        NOT USED
-        
-        Example Usage:
-            @app.route('/home')
-            @login_required
-            def view_user_statistics():
-                ....
-        """
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            if 'user_id' not in session:
-                return jsonify({'error': 'Not authenticated'}), 401
-            return f(*args, **kwargs)
-        return wrapper
-    
     
     def authenticate(self, username: str, password: str) -> int:
         """

@@ -7,34 +7,41 @@ from datetime import datetime
 from typing import List, Tuple, Optional
 
 # Third Party Imports
-from sqlalchemy import Table, ForeignKey, String, create_engine, Column, Integer, Float, String, DECIMAL, DateTime
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker, Session
-
-# Project-Specific Imports
+from sqlalchemy import Table, ForeignKey, String, Column, Integer, Float, String, DECIMAL, DateTime
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase): pass
 
 
-# Association Tables ---------------------------------------------------------- 
-# Many-to-many relationships - e.g., a user can be in multiple groups, and a 
-# group consists of multiple users.
-user_groups = Table(
+# Association Tables (for many-to-many relationships) ------------------------- 
+# A user can be in multiple groups, and a group consists of multiple users.
+UserGroups = Table(
     'user_groups',
     Base.metadata,
     Column('user_id', Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True),
     Column('group_id', Integer, ForeignKey('groups.group_id', ondelete='CASCADE'), primary_key=True)
 )
 
-user_items = Table(
+# Link each user to the quantity of items he/she bought. An item can be shared
+# among users
+UserItems = Table(
     'user_items',
     Base.metadata,
     Column('user_id', Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True),
     Column('item_id', Integer, ForeignKey('items.item_id', ondelete='CASCADE'), primary_key=True),
-    Column('weight', Float, nullable=True),  # Optional for precise splitting
-    Column('quantity', Integer, nullable=True)
+    # Units can refer to quantity or weight, depending on the item
+    Column('unit', Integer, nullable=True)
 )
 
+# Link each user to the costs he/she spent on each receipt. 
+UserSpending = Table(
+    'user_spending',
+    Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.user_id', ondelete='CASCADE'), primary_key=True),
+    Column('receipt_id', Integer, ForeignKey('receipts.receipt_id', ondelete='CASCADE'), primary_key=True),
+    Column('cost', Float, nullable=True)
+)
 
 # Data Tables -----------------------------------------------------------------
 class Group(Base):
@@ -58,7 +65,7 @@ class Group(Base):
     
     # ----- Relationships -----
     # A group can have multiple users
-    users: Mapped[List["User"]] = relationship("User", secondary=user_groups, back_populates="groups")
+    users: Mapped[List["User"]] = relationship("User", secondary=UserGroups, back_populates="groups")
     # A group can have multiple receipts
     receipts: Mapped[List["Receipt"]] = relationship("Receipt", back_populates="group")
     
@@ -88,9 +95,9 @@ class User(Base):
     
     # ----- Relationships -----
     # A user can join multiple groups
-    groups: Mapped[List[Group]] = relationship("Group", secondary=user_groups, back_populates="users")
+    groups: Mapped[List[Group]] = relationship("Group", secondary=UserGroups, back_populates="users")
     # A user can have multiple items
-    items: Mapped[List[Item]] = relationship("Item", secondary=user_items, back_populates="users")
+    items: Mapped[List[Item]] = relationship("Item", secondary=UserItems, back_populates="users")
     
     # ----- Methods -----
     def __repr__(self) -> str:
@@ -102,7 +109,8 @@ class Receipt(Base):
     SQLAlchemy Database entry object.
     
     Args:
-        receipt_id (int): Assigned Receipt ID
+        receipt_id (int): Primary key, autoincremented
+        receipt_id (int): Assigned order ID
         slot_time (float): Time in UNIX epoch
         total_price (Decimal): Price of the receipt
         group_id (int): Group which the receipt belongs to.
@@ -115,6 +123,7 @@ class Receipt(Base):
     
     # ----- Columns -----
     receipt_id: Mapped[int] = mapped_column(primary_key=True)
+    order_id: Mapped[int] = mapped_column(Integer)
     slot_time: Mapped[datetime] = mapped_column(DateTime)
     total_price: Mapped[DECIMAL] = mapped_column(DECIMAL(10, 2))
     group_id: Mapped[int] = mapped_column(Integer, ForeignKey('groups.group_id', ondelete='CASCADE'))
@@ -159,5 +168,4 @@ class Item(Base):
     # One-to-many - an item only belong to one receipt
     receipt: Mapped[User] = relationship("Receipt", back_populates="items")
     # Many-to-many - An item can belong to multiple users
-    users: Mapped[User] = relationship("User", secondary=user_items, back_populates="items")
-
+    users: Mapped[User] = relationship("User", secondary=UserItems, back_populates="items")
