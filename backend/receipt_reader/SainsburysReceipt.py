@@ -5,12 +5,16 @@ receipt.
 This file can be ran to verify the parsing logic.
 """
 import argparse
-import pandas as pd
+import logging
+from typing import List, Dict
 from datetime import datetime as dt
+
+# Third-Party Imports
+import pandas as pd
 from pypdf import PdfReader
 
 # Project-Specific Imports
-from path_management.base import get_base_path
+from app_logger import logger
 
 # TODO: Create another Receipt class to be inherited (in case of other receipts)
 
@@ -20,24 +24,30 @@ class SainsburysReceipt():
 
         self._file = pdf_file
         
+        logger.info(f"Receipt File Type is {type(self._file)}")
+        
         self._content = None           # A list of PDF lines (Raw)
         self._filtered_content = None  # A list of strings for items
         self._order_id = None          # Order ID
         self._order_date = None        # Order Date
+        self._total_price = None       # Total price of order
+        self._payment_card = None      # Last four digits of payment card
         self._quantities = None        # List of quantities for each item
         self._weights = None           # List of weights for each item
         self._names = None             # List of names for each item
         self._prices = None            # List of prices for each item
 
         self._item_df = None           # Pandas Dataframe of all orders
+        self._json = None              # JSON representation of order
         
         self._parse_receipt()
-        # Order ID and time
-        self._find_order_id_time()
+        # Order ID, time, price and card
+        self._find_order_info()
         # Order Items
         self._filter_content_to_items()
         self._find_items_info()
         self._process_item_info()
+        self._jsonify_receipt()
   
     def _parse_receipt(self):
         """
@@ -54,13 +64,13 @@ class SainsburysReceipt():
         self._content = pdf_content
         
 
-    def _find_order_id_time(self):
+    def _find_order_info(self):
         """
         Uses the PdfReader module to read and parse the receipts pdf into a list, each element
         representing a line in the receipt.
         """
     
-        for line in self._content:
+        for idx, line in enumerate(self._content):
             
             # Look for order ID by splitting by colon ":"
             if line.startswith("Your receipt for order: "):
@@ -72,7 +82,18 @@ class SainsburysReceipt():
                 first_colon_index = line.index(":")
                 order_time = line[first_colon_index + 1:]
                 order_time = order_time.strip()  # Use strip to remove any leading/trailing whitespace
-                break
+            
+            # The price is on the same line as "total paid"
+            if line.startswith("Total paid"):
+                _, total_price = line.split('£')
+                total_price = float(total_price.strip())
+            
+            # The actual card number exists on the line after this text
+            if line.startswith("We took payment on a card ending in"):
+                # Next line, first four characters is the payment card
+                payment_card = int(self._content[idx+1][0:4])
+                break  # Break here since no information is needed after
+            
 
         # Convert the date string into a datetime object.
         # ----------
@@ -91,7 +112,8 @@ class SainsburysReceipt():
         # Save permanently as attributes
         self._order_id = order_id
         self._order_date = order_date
-        
+        self._total_price = total_price
+        self._payment_card = payment_card
 
     def _filter_content_to_items(self):
         """
@@ -177,7 +199,7 @@ class SainsburysReceipt():
                 # Amount can either be quantity or weight. Store it as 'weight' if it ends with 'kg'.
                 # Add other units in the future.
                 if amount.endswith("kg"):
-                    weight = amount
+                    weight = float(amount[:-2])  # Strip the 'kg' characters
                     quantity = None
                 else:
                     weight = None
@@ -185,7 +207,7 @@ class SainsburysReceipt():
 
                 # Append to each list
                 quantities.append(quantity)            # Quantity stored as integers
-                weights.append(weight)                 # Weight stored as strings
+                weights.append(weight)                 # Weight stored as floats
                 names.append(name)                     # Item names stored as strings
                 prices.append(float(price))            # Price stored as floats
 
@@ -235,19 +257,58 @@ class SainsburysReceipt():
                 'price': decoupled_prices
             }
         )
+        
+        # Store items as a list
+        self._item_list = []
+        for quantity, weight, item, price in zip(self._quantities, self._weights, self._names, self._prices):
+            self._item_list.append({"item_name": item, "quantity": quantity, "weight": weight, "price": price})
+
+        
+    def _jsonify_receipt(self):
+        """
+        Store the receipt information into a JSON-like dictionary.
+        """
+        self._json = {
+            "receipt_id": self._order_id,
+            "slot_time": self._order_date,
+            "items": [],
+            "total_price": self._total_price,
+            "payment_card": self._payment_card
+            }
+        
+        for quantity, weight, name, price in zip(self._quantities, self._weights, self._names, self._prices):
+            item_entry = {"name": name, "quantity": quantity, "weight": weight, "price": price}
+            self._json["items"].append(item_entry)
+        
     
     
     @property
-    def order_id(self):
+    def order_id(self) -> int:
         return self._order_id
     
     @property
-    def order_date(self):
+    def order_date(self) -> dt:
         return self._order_date
     
     @property
-    def item_df(self):
+    def total_price(self) -> float:
+        return self._total_price
+    
+    @property
+    def payment_card(self) -> int:
+        return self._payment_card
+    
+    @property
+    def item_df(self) -> pd.DataFrame:
         return self._item_df
+    
+    @property
+    def item_list(self) -> List[Dict]:
+        return self._item_list
+    
+    @property
+    def json(self) -> dict:
+        return self._json
     
     
 if __name__ == '__main__':
@@ -260,7 +321,10 @@ if __name__ == '__main__':
     
     Receipt = SainsburysReceipt(file_path)   # TODO: search the file name within the receipts directory
     
-    print(f'Order ID:   {Receipt.order_id}')
-    print(f"Order date: {Receipt.order_date}")
-    print(f"Orders:     {Receipt.item_df}")
+    print(f'Order ID:     {Receipt.order_id}')
+    print(f"Order date:   {Receipt.order_date}")
+    print(f'Total price:  {Receipt.total_price}')
+    print(f'Payment card: {Receipt.payment_card}')
+    print(f"Orders:       {Receipt.item_df}")
+    print(f"Receipt Json: {Receipt.json}")
     
