@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 # Project-Specific Imports
-from models import Base
+from backend.models import Base
 
 
 # Determine if flask app utilizes local SQLite database or remote PostgreSQL

@@ -1,12 +1,14 @@
+# Standard Imports
 from typing import Tuple, Dict
 from passlib.context import CryptContext
 from sqlalchemy import select, insert
 from sqlalchemy.sql import exists
 from flask import Blueprint, request, jsonify, session, redirect, url_for
 
-from database import SessionLocal
-from models import Group, User, UserGroups
-from Authentication import Authentication
+# Project-Specific Imports
+from backend.database import SessionLocal
+from backend.models import Group, User, UserGroups
+from backend.Authentication import Authentication
 
 user_blueprint = Blueprint('user', __name__)
 
