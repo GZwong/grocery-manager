@@ -23,7 +23,7 @@ from backend.models import Base
 # Determine if flask app utilizes local SQLite database or remote PostgreSQL
 parser = argparse.ArgumentParser()
 parser.add_argument('--local', action='store_true', help="Run the app locally with SQLite")
-args = parser.parse_args()
+args, unknown = parser.parse_args()  # Second argument apparently needed for gunicorn (from reddit, untested) 
 if args.local:
     # Local SQLite database
     db_path = Path(__file__).resolve().parent.parent / "groceries.db"
