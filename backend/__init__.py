@@ -4,9 +4,9 @@ import os
 from flask import Flask
 
 # Routes
-from routes.group_routes import groups_blueprint
-from routes.user_routes import user_blueprint
-from routes.receipt_routes import receipt_blueprint
+from backend.routes.group_routes import groups_blueprint
+from backend.routes.user_routes import user_blueprint
+from backend.routes.receipt_routes import receipt_blueprint
 
 # MAIN CODE HERE
 def create_app():
