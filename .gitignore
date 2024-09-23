@@ -1,7 +1,12 @@
 __pycache__/
 .vscode/
 venv/
+.venv
 
 receipts/
 *.db
-tempCodeRunnerFile.py
+.log
+
+# Environment variables contain private information such as database URL,
+# username, password etc., so should not be saved
+*.env
