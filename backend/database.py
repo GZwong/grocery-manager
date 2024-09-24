@@ -36,12 +36,8 @@ from backend.models import Base
 #     if not DATABASE_URL:
 #         raise ValueError("DATABASE_URL environment variable is not set")
 #     print("Running with remote database...")
+load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
-
-
-# Specify the schema
-metadata = MetaData(schema='finance')  # TODO: This does not seem to work
-Base.metadata = metadata
 
 # Create Engine
 engine = create_engine(DATABASE_URL)
