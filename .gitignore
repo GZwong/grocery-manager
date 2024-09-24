@@ -2,6 +2,9 @@ __pycache__/
 .vscode/
 venv/
 .venv
+.frontenv
+*.egg-info
+*.egg-info/
 
 receipts/
 *.db

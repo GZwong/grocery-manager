@@ -53,3 +53,7 @@ The database contains three tables:
 The diagram below depicts the workflow of the application:
 
 ![Alt text](static/Flowchart.png)
+
+# NOTE
+* `bcrypt==4.0.1`
+* Does not work with argparse - remove it for now.
