@@ -1,13 +1,13 @@
 # Standard Imports
+import os
 import requests
 
 # Third-Party Imports
 import streamlit as st
+from dotenv import load_dotenv
 
-
-# TODO: Change this later
-BASE_URL = "http://127.0.0.1:5000"
-
+load_dotenv()
+BASE_URL = os.getenv('BACKEND_URL')
 
 class CredentialsManager(object):
     
@@ -17,7 +17,9 @@ class CredentialsManager(object):
     def _register_user(self, username: str, password: str, email: str):
         data = {'username': username, 'password': password, 'email': email}
         response = requests.post(f"{BASE_URL}/user/create", json=data)
-        return response
+        if response.status_code == 200:
+            return True
+        return False
 
     def _login(self, username, password):
         data = {"username": username, "password": password}
@@ -75,7 +77,7 @@ class CredentialsManager(object):
         """
         Renders a registration form.
         """    
-        with st.form("Register as new user"):
+        with st.form("Register as new user", clear_on_submit=True):
             
             # Title
             st.write("Register as a new user")
@@ -88,10 +90,10 @@ class CredentialsManager(object):
             register_button = st.form_submit_button("Register")
                     
             if register_button:
-                register_state = self._register_user(username, password, email)
+                register_success = self._register_user(username, password, email)
                 
-                if register_state.status_code == 200:
+                if register_success:
                     st.success("Registration successful!")
-                    st.rerun()
+                    self._login(username, password)
                 else:
-                    st.error(f"Error, {register_state.json()}")
+                    st.error(f"Registration error. Please try again.")

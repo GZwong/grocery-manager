@@ -1,25 +1,23 @@
 # Standard Imports
+import os
 import requests
-import logging
 from functools import wraps
 from typing import List, Dict
 
 # Third-Party Imports
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile  # For docs
+from dotenv import load_dotenv
 
-# Base URL for API
-BASE_URL = "http://127.0.0.1:5000"
-
-# logging
-logger = logging.getLogger("Testing backend API")
-logging.basicConfig(filename='myapp.log', level=logging.INFO)
+# Obtain backend URL from environmental variables
+load_dotenv()
+BASE_URL = os.getenv('BACKEND_URL')
 
 
 def get_username(user_id: int):
     response = requests.get(f"{BASE_URL}/user/get/username/{user_id}")
     if response.status_code == 200:
-        return response.json()['username']    
+        return response.json()['username']
     return None
 
 def get_user_id(username: str):
@@ -29,17 +27,13 @@ def get_user_id(username: str):
     return None
 
 def get_user_email(user_id: int):
-    
     response = requests.get(f"{BASE_URL}/user/get/email/{user_id}")
-    
     if response.status_code == 200:
         return response.json()['email']
     return None
 
 def get_all_groups() -> List[Dict]:
-    
     response = requests.get(f"{BASE_URL}/groups/get-all")
-    
     if response.status_code == 200:
         return response.json()
     return None
@@ -126,6 +120,7 @@ def get_receipt_list_in_group(group_id: int):
     Return a list of receipts in the form of dictionaries each with the
     following fields:
         - "receipt_id"
+        - "order_id"
         - "slot_time"
         - "total_price"
         - "payment_card"
@@ -138,6 +133,7 @@ def get_receipt_list_in_group(group_id: int):
         return receipt_list
     return False
 
+
 def get_receipt_data(receipt_id: int):
     
     response = requests.get(f"{BASE_URL}/receipt/get/{receipt_id}")
@@ -148,7 +144,7 @@ def get_receipt_data(receipt_id: int):
     return False
 
 
-def get_users_in_receipt(receipt_id: int):
+def get_users_items_in(receipt_id: int):
     response = requests.get(f"{BASE_URL}/receipt/get/user-items/{receipt_id}")
     if response.status_code == 200:
         if response:
@@ -158,15 +154,77 @@ def get_users_in_receipt(receipt_id: int):
     else:
         return False
     
-def update_user_item_association(data):
+def update_user_item_association(user_ids: list[int],
+                                 item_ids: list[int],
+                                 units: list[int | float]):
+    """
+    Given a list of user IDs, item IDs and units, update the amount of an item
+    purchased by the user.
+    """
+    # Validate that all lists are the same length
+    if len(item_ids) != len(user_ids) != len(units):
+        raise ValueError("User IDs, Item IDs and units must be all of the same length")
+    
+    # Construct data to be sent
+    data = [{'user_id': user_id, 'item_id': item_id, 'unit': unit} 
+            for (user_id, item_id, unit) in zip(user_ids, item_ids, units)]
+        
     response = requests.put(f"{BASE_URL}/receipt/update/user-items", json=data)
     if response.status_code == 200:
         return True
     return False
 
+
+def get_user_spending(user_id: int) -> List[Dict]:
+    """
+    Given a user ID, finds all related receipt ID, their slot time and cost
+    spent by the user on the receipt. This returned data will be of the form:
+    
+        [
+            {"receipt_id" 1, "receipt_time":  14-Jun-24, "cost": 12.78},
+            {"receipt_id" 2, "receipt_time":  15-Jun-24, "cost":  9.10}
+        ]
+    """
+    response = requests.get(f"{BASE_URL}/receipt/get/user-cost/{user_id}")
+    if response.status_code == 200:
+        return response.json()
+    return False
+
+
+def add_user_spending(user_id: int, receipt_id: int):
+    """
+    Given a user ID and receipt ID, add a new entry in the data table
+    that links the user ID to the spending he/she made in this receipt.
+    """
+    data = {"user_id": user_id, "receipt_id": receipt_id}
+    response = requests.post(f"{BASE_URL}/receipt/add/user-cost", json=data)
+    if response.status_code == 200:
+        return True
+    return False
+
+
+def update_user_spending(receipt_id: int,
+                         user_ids: List[int],
+                         costs: List[int]):
+    
+    # Data validation
+    if len(user_ids) != len(costs):
+            raise ValueError("User IDs and costs  must be of the same length")
+        
+    
+        
+    # Construct required data format from function input
+    data = []
+    for user_id, cost in zip(user_ids, costs):
+        data.append({"user_id": int(user_id), "receipt_id": receipt_id, "cost": cost})
+    
+    response = requests.put(f"{BASE_URL}/receipt/update/user-cost", json=data)
+    if response.status_code == 200:
+        return True
+    return False
+
 def add_user_to_receipt(user_id: int, receipt_id: int):
-    data = {'user_id': user_id, 'receipt_id': receipt_id}
-    response = requests.post(f"{BASE_URL}/receipt/update/user-items", json=data)
+    response = requests.post(f"{BASE_URL}/receipt/{receipt_id}/add-user/{user_id}")
     if response.status_code == 200:
         return True
     return False

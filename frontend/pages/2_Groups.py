@@ -1,10 +1,13 @@
+# Standard Imports
 from typing import List, Dict
+from datetime import datetime as dt
 
+# Third-Party Imports
 import pandas as pd
 import streamlit as st
-from datetime import datetime as dt
-from frontend import utils
 
+# Project-Specific Imports
+from frontend import api_client
 from frontend.layouts.LoginUtils import CredentialsManager
 
 # Start up by inspecting credentials
@@ -21,11 +24,6 @@ if not authenticated:
     
     creds_manager.login_form()
     creds_manager.register_form()
-    
-    # For debugging purposes
-    st.write("Current session state:")
-    for key, value in st.session_state.items():
-        st.write(f"----- {key}: {value}")
 
     # Rerun the application if user becomes authenticated
     authenticated = creds_manager.check_authentication()
@@ -37,11 +35,11 @@ else:
     
     # Load username as session_state using user_id
     user_id = st.session_state['user_id']
-    username = utils.get_username(user_id)
+    username = api_client.get_username(user_id)
     st.session_state['username'] = username
 
     # Get all groups joined by user
-    group_list = utils.get_groups_joined_by_user(user_id)
+    group_list = api_client.get_groups_joined_by_user(user_id)
     
     # Join Groups    
     group_name_to_join = st.text_input(
@@ -49,58 +47,54 @@ else:
         placeholder="Group Name",
     )
     if group_name_to_join:
-        if utils.add_user_to_group(user_id, group_name_to_join):
+        if api_client.add_user_to_group(user_id, group_name_to_join):
             st.success("You have been added to the group!")
             st.rerun()
-          
-    # Stop rendering the rest if user has not joined any groups  
-    if not group_list:
-        st.stop()
-    
+
     st.divider()
     
-    # Show all joined groups
-    st.header("Joined Groups")
-    
-    # Create an expander for each group
-    for idx, group in enumerate(group_list):
+    # Show all joined groups (if applicable)
+    if group_list:
+        st.header("Joined Groups")
         
-        with st.expander(f"{group['group_name']}"):
+        # Create an expander for each group
+        for idx, group in enumerate(group_list):
             
-            st.caption(group["description"])
-            
-            col1, col2, col3 = st.columns([5, 3, 2])
-            
-            # Look at receipt button
-            with col1:
-                pass
-            
-            # Add Other User(s) Button
-            with col2:
-                username_to_add = st.text_input(label="Add a user 👇",
-                                                placeholder="Username",
-                                                # Pass unique key
-                                                key=f'add-user-{idx}')
-                if username_to_add:
-                    user_id_to_add = utils.get_user_id(username_to_add)
-                    if utils.add_user_to_group(user_id_to_add, group['group_name']):
-                        st.success("User added to group")
-                        st.rerun()
-            
-            # Delete Group Button - Add popover for confirmation
-            with col3:
-                with st.popover("Delete group"):
-                    st.caption("Are you sure you want to delete this group?")
-                    delete_button = st.button(label="Yes",
-                                            key=f'delete-group-{idx}')
-                    if delete_button:
-                        utils.delete_group(group['group_name'])
-                        st.rerun()
-                    
-    st.divider()
-    
+            with st.expander(f"{group['group_name']}"):
+                
+                st.caption(group["description"])
+                
+                col1, col2, col3 = st.columns([5, 3, 2])
+                
+                # Look at receipt button
+                with col1:
+                    pass
+                
+                # Add Other User(s) Button
+                with col2:
+                    username_to_add = st.text_input(label="Add a user 👇",
+                                                    placeholder="Username",
+                                                    # Pass unique key
+                                                    key=f'add-user-{idx}')
+                    if username_to_add:
+                        user_id_to_add = api_client.get_user_id(username_to_add)
+                        if api_client.add_user_to_group(user_id_to_add, group['group_name']):
+                            st.success("User added to group")
+                            st.rerun()
+                
+                # Delete Group Button - Add popover for confirmation
+                with col3:
+                    with st.popover("Delete group"):
+                        st.caption("Are you sure you want to delete this group?")
+                        delete_button = st.button(label="Yes",
+                                                key=f'delete-group-{idx}')
+                        if delete_button:
+                            api_client.delete_group(group['group_name'])
+                            st.rerun()
+        st.divider()
+
     # Form - Allow user to create a group
-    with st.form("Create a group", border=False):
+    with st.form("Create a group", clear_on_submit=True):
         
         st.write("Create a group")
 
@@ -111,15 +105,15 @@ else:
         submitted = st.form_submit_button("Create")
         
         if submitted:
-            status = utils.create_group(group_name, description)
+            status = api_client.create_group(group_name, description)
             
             if status:
                 st.success("Group successfully created!")
                 
                 # The user joins the group upon creation
-                if utils.add_user_to_group(user_id, group_name):
+                if api_client.add_user_to_group(user_id, group_name):
                     st.success("You have been automatically added to the group!")
                     st.rerun()
 
             else:
-                st.error("Group was not created, try again.")
+                st.error("Error: Invalid group name")

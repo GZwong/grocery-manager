@@ -1,9 +1,20 @@
-import requests
-import streamlit as st
+"""
+The home page showing user statistics.
+"""
+# Standard Imports
+import os
+import sys
 from datetime import datetime as dt
-from frontend import utils
 
-from frontend.layouts.LoginUtils import CredentialsManager
+# Third-Party Imports
+import streamlit as st
+
+# Project-Specific Imports
+# Add the parent folder to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import frontend.api_client as api
+from layouts.LoginUtils import CredentialsManager
+from components.UserSpendingViewer import UserSpendingViewer
 
 # Start up by inspecting credentials
 creds_manager = CredentialsManager()
@@ -19,11 +30,6 @@ if not authenticated:
     
     creds_manager.login_form()
     creds_manager.register_form()
-    
-    # For debugging purposes
-    st.write("Current session state:")
-    for key, value in st.session_state.items():
-        st.write(f"----- {key}: {value}")
 
     # Rerun the application if user becomes authenticated
     authenticated = creds_manager.check_authentication()
@@ -31,14 +37,18 @@ if not authenticated:
 
 else:
     
-    with st.sidebar:
-        st.button("Logout")
-    
     # PAGE STARTS HERE --------------------------------------------------------
     
     # Load username as session_state using user_id
     user_id = st.session_state['user_id']
-    username = utils.get_username(user_id)
+    username = api.get_username(user_id)
+    email = api.get_user_email(user_id)
     st.session_state['username'] = username
     
-    st.title(f"Welcome, {username}!")
+    # Display user information
+    st.title(username)
+    st.markdown(f"**User ID**: {user_id}")
+    st.markdown(f"**Email**: {email}")
+    
+    # Display line chart showing the cost spent per receipt
+    spending_viewer = UserSpendingViewer(user_id)
