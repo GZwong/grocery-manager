@@ -16,20 +16,28 @@ class CredentialsManager(object):
             
     def _register_user(self, username: str, password: str, email: str):
         data = {'username': username, 'password': password, 'email': email}
-        response = requests.post(f"{BASE_URL}/user/create", json=data)
-        if response.status_code == 200:
+        response = requests.post(f"{BASE_URL}/users", json=data)
+        print(response.json())
+        if response.status_code == 201:
             return True
         return False
 
     def _login(self, username, password):
         data = {"username": username, "password": password}
-        response = requests.post(f"{BASE_URL}/user/login", json=data)
+        response = requests.post(f"{BASE_URL}/users/login", json=data)
         
-        # If backend authenticated, save user_id as streamlit session_state
-        # for easier assess
+        # If backend authenticated, save token as streamlit session_state
+        # for global 
         if response.status_code == 200:
-            st.session_state['authenticated'] = True
-            st.session_state['user_id'] = response.json().get('user_id', None)
+            
+            # Extract JWT
+            data = response.json()  # Extract JWT
+            token = data.get("access_token", None)
+            user_id = data.get("user_id", None)
+            
+            st.session_state["authenticated"] = True
+            st.session_state['access_token'] = token
+            st.session_state['user_id'] = user_id
         
         return response
     
@@ -45,10 +53,7 @@ class CredentialsManager(object):
         Check authentication status through streamlit session state.
         """
         authenticated = st.session_state.get('authenticated', False)
-        if authenticated:
-            return True
-        return False
-    
+        return authenticated
 
     def login_form(self):
         """

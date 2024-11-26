@@ -32,14 +32,13 @@ if not authenticated:
 else:
     
     # PAGE STARTS HERE --------------------------------------------------------
-    
     # Load username as session_state using user_id
     user_id = st.session_state['user_id']
     username = api_client.get_username(user_id)
     st.session_state['username'] = username
 
     # Get all groups joined by user
-    group_list = api_client.get_groups_joined_by_user(user_id)
+    group_list = api_client.get_groups_joined_by_user()
     
     # Join Groups    
     group_name_to_join = st.text_input(

@@ -68,7 +68,7 @@ class ReceiptEditor:
             self._receipt_df = DataFrame(self._receipt_data)
             
             # Check and update for users associated with this receipt
-            self._fetch_user_info_updateo()
+            self._fetch_user_info_update()
 
         
     def _validate_columns(self):
@@ -76,7 +76,7 @@ class ReceiptEditor:
         
         # Column names assertion
         assert 'item_id'  in self._receipt_df.columns
-        assert 'name'     in self._receipt_df.columns
+        assert 'item_name'     in self._receipt_df.columns
         assert 'price'    in self._receipt_df.columns
         assert 'quantity' in self._receipt_df.columns
         assert 'weight'   in self._receipt_df.columns
@@ -132,7 +132,7 @@ class ReceiptEditor:
 
         # Define non-editable columns and headers for the rest
         column_def.extend([
-            {"headerName": "Name", "field": "name", "editable": False},
+            {"headerName": "Name", "field": "item_name", "editable": False},
             {"headerName": "Price [£]", "field": "price", "editable": False},
             {"headerName": "Quantity", "field": "quantity", "editable": False},
             {"headerName": "Weight [kg]", "field": "weight", "editable": False},
@@ -163,7 +163,7 @@ class ReceiptEditor:
             # Default configuration for our columns
             grid_options.configure_column(col["field"], headerName=col["headerName"], editable=col["editable"], type=col.get("type", None))
             # Further configure the minimum value
-            if col['field'] not in ['item_id', 'name', 'price', 'quantity', 'weight']:
+            if col['field'] not in ['item_id', 'item_name', 'price', 'quantity', 'weight']:
                 grid_options.configure_column(col['field'], headerName=col["headerName"], cellEditorParams=cellEditorParams_code)
         
         # Hide item_id, no_units and price columns
@@ -188,7 +188,7 @@ class ReceiptEditor:
     def _render_user_cost(self):
         
         # Calculate costs using most updated data
-        self._fetch_user_info_updateo()
+        self._fetch_user_info_update()
         updated_df: DataFrame = self._receipt_grid['data']
         
         # Initialize array to store user costs
@@ -222,7 +222,7 @@ class ReceiptEditor:
                     st.error("An error has occured. Try again.")
 
 
-    def _fetch_user_info_updateo(self):
+    def _fetch_user_info_update(self):
         """
         Fetch latest user information (e.g., who is part of this receipt) and
         save under object attributes. 
@@ -235,7 +235,6 @@ class ReceiptEditor:
         # If there are previous records of users associated with this 
         # receipt, combine it with item data
         if user_items_association:
-                
             # Store the available usernames and user IDs as separate lists
             # Intermediate conversion to a set to retain unique values 
             self.user_ids  = list(set([user_item['user_id'] 

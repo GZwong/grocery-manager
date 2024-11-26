@@ -19,7 +19,7 @@ class UserSpendingViewer():
     
     def _fetch_user_spending_data(self):
         
-        user_spending = get_user_spending(self._user_id)
+        user_spending = get_user_spending()
         if user_spending:
             self._user_spending = user_spending
             return True
