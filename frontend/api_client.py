@@ -15,30 +15,28 @@ BASE_URL = os.getenv('BACKEND_URL')
 
 
 def get_username(user_id: int):
-    response = requests.get(f"{BASE_URL}/user/get/username/{user_id}")
+    response = requests.get(f"{BASE_URL}/users/resolve/{user_id}")
     if response.status_code == 200:
         return response.json()['username']
     return None
 
+
 def get_user_id(username: str):
-    response = requests.get(f"{BASE_URL}/user/get/user-id/{username}")
+    response = requests.get(f"{BASE_URL}/users/resolve/{username}")
     if response.status_code == 200:
-        return response.json().get('user_id')
+        return response.json()['user_id']
     return None
 
-def get_user_email(user_id: int):
-    response = requests.get(f"{BASE_URL}/user/get/email/{user_id}")
+
+def get_user_email():
+    response = requests.get(
+        f"{BASE_URL}/users", headers={'Authorization': f"Bearer {st.session_state.get('access_token', None)}"})
     if response.status_code == 200:
         return response.json()['email']
     return None
 
-def get_all_groups() -> List[Dict]:
-    response = requests.get(f"{BASE_URL}/groups/get-all")
-    if response.status_code == 200:
-        return response.json()
-    return None
 
-def get_groups_joined_by_user(user_id: int):
+def get_groups_joined_by_user():
     """
     Inputs
     ------
@@ -65,7 +63,9 @@ def get_groups_joined_by_user(user_id: int):
             ]
     """
     
-    response = requests.get(f"{BASE_URL}/user/get/groups/{user_id}")
+    response = requests.get(
+        f"{BASE_URL}/users/groups",
+        headers={'Authorization': f"Bearer {st.session_state.get('access_token', None)}"})
     
     if response.status_code == 200:
         return response.json()
@@ -76,10 +76,9 @@ def create_group(name: str, description: str) -> bool:
     """
     Return True if group is created, False if request failed.
     """
-    data = {"name": name, "description": description}
-    response = requests.post(f"{BASE_URL}/groups/create", json=data)
-    
-    if response.status_code == 200:
+    data = {"group_name": name, "description": description}
+    response = requests.post(f"{BASE_URL}/groups", json=data)
+    if response.status_code == 201:
         return True
     return False
 
@@ -88,17 +87,23 @@ def delete_group(name: str) -> bool:
     Return True if group is deleted, False if request failed.
     """
     data = {"group_name": name}
-    response = requests.delete(f"{BASE_URL}/groups/delete", json=data)
+    response = requests.delete(f"{BASE_URL}/groups", json=data)
     
-    if response.status_code == 200:
+    if response.status_code == 204:
         return True
     return False
 
 
 def add_user_to_group(user_id: int, group_name: str) -> dict:
     
-    data = {"user_id": user_id, "group_name": group_name}
-    response = requests.post(f"{BASE_URL}/groups/add-user-to-group", json=data)
+    # Obtain the group ID based on group name
+    response = requests.get(f"{BASE_URL}/groups/resolve/{group_name}")
+    if response.status_code != 200:
+        return False
+    
+    group_id = response.json().get("group_id")
+    
+    response = requests.post(f"{BASE_URL}/groups/{group_id}/users/{user_id}")
     
     if response.status_code == 200:
         return True
@@ -107,11 +112,13 @@ def add_user_to_group(user_id: int, group_name: str) -> dict:
 
 def add_receipt_to_group(pdf_file: UploadedFile, group_id: int) -> bool:
     
-    file = {"file": (pdf_file.name, pdf_file.getvalue(), pdf_file.type)}
-    data = {"group_id": group_id}
+    response = requests.post(f"{BASE_URL}/groups/{group_id}/receipts", 
+                             files={"file": (pdf_file.name, pdf_file, 
+                                             # Send as multipart/form-data
+                                             "application/pdf")})
 
-    response = requests.post(f"{BASE_URL}/receipt/add", files=file, data=data)
-    if response.status_code == 200:
+    
+    if response.status_code == 201:
         return True
     return False
 
@@ -126,7 +133,7 @@ def get_receipt_list_in_group(group_id: int):
         - "payment_card"
     """
 
-    response = requests.get(f"{BASE_URL}/receipt/get-receipt-list/{group_id}")
+    response = requests.get(f"{BASE_URL}/groups/{group_id}/receipts")
     
     if response.status_code == 200:
         receipt_list: List[Dict] = [receipt_info for receipt_info in response.json()["receipts"]]
@@ -136,21 +143,19 @@ def get_receipt_list_in_group(group_id: int):
 
 def get_receipt_data(receipt_id: int):
     
-    response = requests.get(f"{BASE_URL}/receipt/get/{receipt_id}")
+    response = requests.get(f"{BASE_URL}/receipts/{receipt_id}/items")
     
     if response.status_code == 200:
-        item_list: List[Dict] = [item_info for item_info in response.json()["items"]]
+        item_list: List[Dict] = [item_info for item_info in response.json()]
         return item_list
     return False
 
 
 def get_users_items_in(receipt_id: int):
-    response = requests.get(f"{BASE_URL}/receipt/get/user-items/{receipt_id}")
-    if response.status_code == 200:
-        if response:
-            user_item_association = response.json()
-            if "user_item_association" in user_item_association:
-                return user_item_association["user_item_association"]
+    response = requests.get(f"{BASE_URL}/receipts/user-items/{receipt_id}")
+    if response and response.status_code == 200:
+        user_item_association = response.json()
+        return user_item_association
     else:
         return False
     
@@ -169,13 +174,13 @@ def update_user_item_association(user_ids: list[int],
     data = [{'user_id': user_id, 'item_id': item_id, 'unit': unit} 
             for (user_id, item_id, unit) in zip(user_ids, item_ids, units)]
         
-    response = requests.put(f"{BASE_URL}/receipt/update/user-items", json=data)
+    response = requests.put(f"{BASE_URL}/receipts/user-items", json=data)
     if response.status_code == 200:
         return True
     return False
 
 
-def get_user_spending(user_id: int) -> List[Dict]:
+def get_user_spending() -> List[Dict]:
     """
     Given a user ID, finds all related receipt ID, their slot time and cost
     spent by the user on the receipt. This returned data will be of the form:
@@ -185,7 +190,9 @@ def get_user_spending(user_id: int) -> List[Dict]:
             {"receipt_id" 2, "receipt_time":  15-Jun-24, "cost":  9.10}
         ]
     """
-    response = requests.get(f"{BASE_URL}/receipt/get/user-cost/{user_id}")
+    response = requests.get(f"{BASE_URL}/users/costs",
+                            headers={"Authorization": f"Bearer {st.session_state.get('access_token', None)}"})
+
     if response.status_code == 200:
         return response.json()
     return False
@@ -196,8 +203,14 @@ def add_user_spending(user_id: int, receipt_id: int):
     Given a user ID and receipt ID, add a new entry in the data table
     that links the user ID to the spending he/she made in this receipt.
     """
-    data = {"user_id": user_id, "receipt_id": receipt_id}
-    response = requests.post(f"{BASE_URL}/receipt/add/user-cost", json=data)
+    data = {"user_id": user_id, 
+            "receipt_id": receipt_id, 
+            # Initialize the cost to zero
+            "cost": 0}
+    
+    response = requests.put(f"{BASE_URL}/users/costs", 
+                            json=data,
+                            headers={"Authorization": f"Bearer {st.session_state.get('access_token', None)}"})
     if response.status_code == 200:
         return True
     return False
@@ -211,21 +224,23 @@ def update_user_spending(receipt_id: int,
     if len(user_ids) != len(costs):
             raise ValueError("User IDs and costs  must be of the same length")
         
-    
-        
     # Construct required data format from function input
-    data = []
+    data = []   
     for user_id, cost in zip(user_ids, costs):
         data.append({"user_id": int(user_id), "receipt_id": receipt_id, "cost": cost})
     
-    response = requests.put(f"{BASE_URL}/receipt/update/user-cost", json=data)
-    if response.status_code == 200:
+    response = requests.put(f"{BASE_URL}/users/costs",
+                            json=data,
+                            headers={"Authorization": f"Bearer {st.session_state.get('access_token', None)}"})
+
+    if response.status_code == 204:
         return True
     return False
 
+
 def add_user_to_receipt(user_id: int, receipt_id: int):
-    response = requests.post(f"{BASE_URL}/receipt/{receipt_id}/add-user/{user_id}")
-    if response.status_code == 200:
+    response = requests.post(f"{BASE_URL}/receipts/{receipt_id}/users/{user_id}")
+    if response.status_code == 201:
         return True
     return False
 
@@ -239,7 +254,7 @@ def get_users_in_group(group_id: int) -> List[Dict]:
         ]
     Otherwise return False
     """
-    response = requests.get(f"{BASE_URL}/groups/in/{group_id}")
+    response = requests.get(f"{BASE_URL}/groups/{group_id}/users")
     if response.status_code == 200:
         return response.json()
     return False

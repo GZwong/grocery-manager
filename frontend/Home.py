@@ -42,7 +42,7 @@ else:
     # Load username as session_state using user_id
     user_id = st.session_state['user_id']
     username = api.get_username(user_id)
-    email = api.get_user_email(user_id)
+    email = api.get_user_email()
     st.session_state['username'] = username
     
     # Display user information

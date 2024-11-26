@@ -38,7 +38,7 @@ else:
     st.session_state['username'] = username
 
     # Get all groups that the user is in
-    group_list: List[Dict] = api_client.get_groups_joined_by_user(user_id)
+    group_list: List[Dict] = api_client.get_groups_joined_by_user()
     
     # User may not be associated with a group
     if not group_list:
