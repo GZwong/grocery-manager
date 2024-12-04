@@ -272,7 +272,7 @@ class ReceiptEditor:
                 user_ids.append(int(id))
                 item_ids.append(int(row['item_id']))
                 # Need to specify a string representation of the ID
-                units.append(float(0 if isna(row[id]) else row[str(id)]))
+                units.append(float(0 if isna(row[str(id)]) else row[str(id)]))
 
         # Save changes to database
         api.update_user_item_association(user_ids, item_ids, units)

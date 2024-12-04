@@ -203,15 +203,16 @@ def add_user_spending(user_id: int, receipt_id: int):
     Given a user ID and receipt ID, add a new entry in the data table
     that links the user ID to the spending he/she made in this receipt.
     """
-    data = {"user_id": user_id, 
+    data = [{"user_id": user_id, 
             "receipt_id": receipt_id, 
             # Initialize the cost to zero
-            "cost": 0}
-    
+            "cost": 0}]
+    print("Adding user spending")
+    print(data)
     response = requests.put(f"{BASE_URL}/users/costs", 
                             json=data,
                             headers={"Authorization": f"Bearer {st.session_state.get('access_token', None)}"})
-    if response.status_code == 200:
+    if response.status_code == 204:
         return True
     return False
 
@@ -228,7 +229,6 @@ def update_user_spending(receipt_id: int,
     data = []   
     for user_id, cost in zip(user_ids, costs):
         data.append({"user_id": int(user_id), "receipt_id": receipt_id, "cost": cost})
-    
     response = requests.put(f"{BASE_URL}/users/costs",
                             json=data,
                             headers={"Authorization": f"Bearer {st.session_state.get('access_token', None)}"})
